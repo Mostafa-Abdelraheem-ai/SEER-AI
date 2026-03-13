@@ -1,0 +1,43 @@
+text,label_attack,label_attack_type,label_tactic,source,channel
+ceo request: send the vendor payment today and keep this confidential.,1,authority impersonation,authority,phishing_corpus,email
+the cfo needs gift cards for a client event. reply only to me and do this now.,1,authority impersonation,secrecy,phishing_corpus,email
+hr has shared a private bonus form. sign in with your company account to claim it.,1,phishing,reward,phishing_corpus,email
+tax refund approved. submit your banking details to receive the transfer.,1,financial fraud,reward,phishing_corpus,email
+happy birthday from the operations team.,0,benign,none,benign_emails,email
+this access exception expires soon so reset your account details now.,1,urgency manipulation,urgency,custom,chat
+refer three friends and claim an internal cafeteria coupon.,0,benign,none,custom,chat
+the bank detected unusual activity. confirm your credentials to avoid closure.,1,credential harvesting,fear,phishing_corpus,email
+i have shared the new design draft in the project folder.,0,benign,none,benign_emails,email
+act now to claim your cash prize before it expires.,1,smishing,reward,sms_spam,sms
+legal team requires immediate acknowledgement of the attached policy update.,1,urgency manipulation,urgency,phishing_corpus,email
+security operations detected a sign-in anomaly. validate your otp within 5 minutes.,1,credential harvesting,urgency,phishing_corpus,email
+your cloud admin password expired. use the executive portal link to reset it now.,1,spear phishing,authority,phishing_corpus,email
+your mailbox quota is full. click to re-authenticate and restore access.,1,phishing,urgency,phishing_corpus,email
+project standup starts in ten minutes.,0,benign,none,sms_spam,sms
+please send me the updated notes after class.,0,benign,none,sms_spam,sms
+confirm your mobile login code to stop service suspension.,1,smishing,reward,sms_spam,sms
+only you can help with this confidential transfer before the audit starts.,1,financial fraud,secrecy,custom,chat
+help me with this private client payment and do not mention it to finance.,1,financial fraud,secrecy,custom,chat
+vendor portal sign-in is required to release the approved purchase order.,1,spear phishing,authority,phishing_corpus,email
+can we postpone the sprint demo until the api issue is fixed,0,benign,none,benign_emails,email
+limited seats remain for the employee reimbursement bonus portal.,1,phishing,scarcity,custom,chat
+immediate action required: acknowledge this compliance notice in the next 20 minutes.,1,urgency manipulation,urgency,phishing_corpus,email
+your premium reward is waiting if you sign in today.,1,phishing,reward,custom,chat
+the weekly soc metrics report is available on the dashboard.,0,benign,none,benign_emails,email
+we need the wire transfer completed in the next 10 minutes for the board meeting.,1,financial fraud,urgency,phishing_corpus,email
+here are the notes from yesterday s research sync.,0,benign,none,benign_emails,email
+last warning: failure to confirm this account today will suspend company access.,1,urgency manipulation,fear,phishing_corpus,email
+your bank account is locked verify immediately at www.bank-fix.example,1,smishing,reward,sms_spam,sms
+your supplier contract needs executive review in the secure portal now.,1,spear phishing,authority,phishing_corpus,email
+dinner at 8 let me know.,0,benign,none,sms_spam,sms
+lunch with the client has been rescheduled to next week.,0,benign,none,benign_emails,email
+can you review the document tonight,0,benign,none,sms_spam,sms
+your campus library book is due in seven days.,0,benign,none,benign_emails,email
+secret offer: respond now for a limited reward card.,1,smishing,reward,sms_spam,sms
+meeting moved to 3 pm in room 2.,0,benign,none,sms_spam,sms
+the professor asked for the draft when you are ready.,0,benign,none,custom,chat
+everyone on the team already completed the security form do yours now.,1,phishing,social proof,custom,chat
+microsoft security alert. re-enter your username and password to prevent lockout.,1,credential harvesting,fear,phishing_corpus,email
+executive office request: process this payment quietly before the cfo meeting.,1,authority impersonation,authority,custom,chat
+your account will be suspended unless you verify your login at http://secure-login-check.com now.,1,phishing,fear,phishing_corpus,email
+the training session on secure password practices is tomorrow.,0,benign,none,benign_emails,email

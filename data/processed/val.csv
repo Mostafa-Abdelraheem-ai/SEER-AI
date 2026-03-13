@@ -1,0 +1,10 @@
+text,label_attack,label_attack_type,label_tactic,source,channel
+the building access card is ready for pickup.,0,benign,none,sms_spam,sms
+a shipment issue requires identity verification before delivery can continue.,1,phishing,scarcity,phishing_corpus,email
+i approved your bonus return the favor by completing this secure form.,1,phishing,reciprocity,custom,chat
+the workshop room changed please use the new calendar invite.,0,benign,none,custom,chat
+this is the director. i need your password reset code immediately.,1,authority impersonation,authority,custom,chat
+urgent parcel issue pay customs fee today to avoid return.,1,smishing,reward,sms_spam,sms
+please find the attached invoice for the approved office chairs.,0,benign,none,benign_emails,email
+win a free gift card now click http://bit.ly/free-reward,1,smishing,reward,sms_spam,sms
+reminder: submit your timesheet by 5 pm on thursday.,0,benign,none,benign_emails,email

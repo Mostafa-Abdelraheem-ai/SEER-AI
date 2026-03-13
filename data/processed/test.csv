@@ -1,0 +1,10 @@
+text,label_attack,label_attack_type,label_tactic,source,channel
+board request: expedite this confidential payment before noon and do not discuss it.,1,authority impersonation,secrecy,phishing_corpus,email
+finance escalation: confidential acquisition payment must be executed today.,1,financial fraud,secrecy,phishing_corpus,email
+security alert: fear-driven messages often threaten closure and demand login data.,0,benign,none,custom,chat
+please update the risk register with the latest vendor status.,0,benign,none,benign_emails,email
+this is a final notice from payroll. update your employee portal password immediately.,1,credential harvesting,urgency,phishing_corpus,email
+vendor invoice mismatch detected. open the secure attachment and confirm payment credentials.,1,spear phishing,authority,phishing_corpus,email
+team meeting moved to friday afternoon. please review the agenda before then.,0,benign,none,benign_emails,email
+if you do not respond within 15 minutes your account will be disabled.,1,urgency manipulation,urgency,custom,chat
+our vendor legal contact needs your confirmation through the private portal.,1,spear phishing,authority,custom,chat

@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+.venv310/
+venv/
+env/
+
+# OS
+.DS_Store
+
+# Python build
+build/
+dist/
+*.egg-info/
+
+# Logs
+*.log
+
+# Jupyter
+.ipynb_checkpoints
+
+# Environment variables
+.env
+
+# Outputs
+outputs/
+
+# Models
+*.pt
+*.pth
+*.bin
+
+# Node
+node_modules/
+frontend/dist/
+
+# Docker
+*.sqlite
+backend_test.db

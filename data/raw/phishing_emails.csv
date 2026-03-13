@@ -1,0 +1,22 @@
+body,attack_type,tactic,source,channel
+"Your account will be suspended unless you verify your login at http://secure-login-check.com now.",phishing,fear,phishing_corpus,email
+"This is a final notice from payroll. Update your employee portal password immediately.",credential harvesting,urgency,phishing_corpus,email
+"The bank detected unusual activity. Confirm your credentials to avoid closure.",credential harvesting,fear,phishing_corpus,email
+"CEO request: send the vendor payment today and keep this confidential.",authority impersonation,authority,phishing_corpus,email
+"We need the wire transfer completed in the next 10 minutes for the board meeting.",financial fraud,urgency,phishing_corpus,email
+"HR has shared a private bonus form. Sign in with your company account to claim it.",phishing,reward,phishing_corpus,email
+"Microsoft security alert. Re-enter your username and password to prevent lockout.",credential harvesting,fear,phishing_corpus,email
+"Your mailbox quota is full. Click to re-authenticate and restore access.",phishing,urgency,phishing_corpus,email
+"The CFO needs gift cards for a client event. Reply only to me and do this now.",authority impersonation,secrecy,phishing_corpus,email
+"Tax refund approved. Submit your banking details to receive the transfer.",financial fraud,reward,phishing_corpus,email
+"Vendor invoice mismatch detected. Open the secure attachment and confirm payment credentials.",spear phishing,authority,phishing_corpus,email
+"A shipment issue requires identity verification before delivery can continue.",phishing,scarcity,phishing_corpus,email
+"Legal team requires immediate acknowledgement of the attached policy update.",urgency manipulation,urgency,phishing_corpus,email
+"Your cloud admin password expired. Use the executive portal link to reset it now.",spear phishing,authority,phishing_corpus,email
+"Security operations detected a sign-in anomaly. Validate your OTP within 5 minutes.",credential harvesting,urgency,phishing_corpus,email
+"Finance escalation: confidential acquisition payment must be executed today.",financial fraud,secrecy,phishing_corpus,email
+"Vendor portal sign-in is required to release the approved purchase order.",spear phishing,authority,phishing_corpus,email
+"Board request: expedite this confidential payment before noon and do not discuss it.",authority impersonation,secrecy,phishing_corpus,email
+"Immediate action required: acknowledge this compliance notice in the next 20 minutes.",urgency manipulation,urgency,phishing_corpus,email
+"Your supplier contract needs executive review in the secure portal now.",spear phishing,authority,phishing_corpus,email
+"Last warning: failure to confirm this account today will suspend company access.",urgency manipulation,fear,phishing_corpus,email

@@ -1,0 +1,16 @@
+text,label_attack,label_attack_type,label_tactic,source,channel
+"Only you can help with this confidential transfer before the audit starts.",1,financial fraud,secrecy,custom,chat
+"Everyone on the team already completed the security form, do yours now.",1,phishing,social proof,custom,chat
+"Your premium reward is waiting if you sign in today.",1,phishing,reward,custom,chat
+"This is the director. I need your password reset code immediately.",1,authority impersonation,authority,custom,chat
+"If you do not respond within 15 minutes your account will be disabled.",1,urgency manipulation,urgency,custom,chat
+"Help me with this private client payment and do not mention it to finance.",1,financial fraud,secrecy,custom,chat
+"Limited seats remain for the employee reimbursement bonus portal.",1,phishing,scarcity,custom,chat
+"I approved your bonus, return the favor by completing this secure form.",1,phishing,reciprocity,custom,chat
+"Executive office request: process this payment quietly before the CFO meeting.",1,authority impersonation,authority,custom,chat
+"This access exception expires soon, so reset your account details now.",1,urgency manipulation,urgency,custom,chat
+"Our vendor legal contact needs your confirmation through the private portal.",1,spear phishing,authority,custom,chat
+"Security alert: fear-driven messages often threaten closure and demand login data.",0,benign,none,custom,chat
+"The workshop room changed, please use the new calendar invite.",0,benign,none,custom,chat
+"Refer three friends and claim an internal cafeteria coupon.",0,benign,none,custom,chat
+"The professor asked for the draft when you are ready.",0,benign,none,custom,chat
