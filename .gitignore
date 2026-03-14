@@ -26,6 +26,8 @@ dist/
 
 # Environment variables
 .env
+backend/.env.production
+frontend/.env.production
 
 # Outputs
 outputs/
@@ -42,3 +44,4 @@ frontend/dist/
 # Docker
 *.sqlite
 backend_test.db
+backups/

@@ -10,7 +10,7 @@ from fastapi.testclient import TestClient
 from app.ai.inference_pipeline import InferencePipeline
 from app.core.database import Base, engine
 from app.main import app
-from app.models import analysis, audit_log, incident_report, retrieved_chunk, triggered_rule, user  # noqa: F401
+from app.models import analysis, audit_log, incident_report, knowledge_chunk, retrieved_chunk, triggered_rule, user  # noqa: F401
 
 
 Base.metadata.drop_all(bind=engine)

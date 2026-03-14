@@ -5,12 +5,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional
 
-import faiss
 import numpy as np
 from sklearn.feature_extraction.text import HashingVectorizer
 
-from src.config import INDEX_DIR, SENTENCE_MODEL_NAME
-from src.rag.kb_loader import KBChunk, load_kb_chunks
+from src.config import EMBEDDING_DIMENSION, INDEX_DIR, SENTENCE_MODEL_NAME
+from src.rag.kb_loader import load_kb_chunks
+from src.rag.store import ensure_schema, get_engine, insert_chunks, reset_chunks
 
 try:
     from sentence_transformers import SentenceTransformer
@@ -29,7 +29,7 @@ class EmbeddingArtifacts:
 class Embedder:
     def __init__(self) -> None:
         self.backend = "hashing"
-        self.vectorizer = HashingVectorizer(n_features=512, alternate_sign=False, norm="l2")
+        self.vectorizer = HashingVectorizer(n_features=EMBEDDING_DIMENSION, alternate_sign=False, norm="l2")
         self.model = None
         if SENTENCE_TRANSFORMERS_AVAILABLE:
             try:
@@ -45,17 +45,29 @@ class Embedder:
         return sparse.astype(np.float32).toarray()
 
 
-def build_index(output_dir: Optional[Path] = None) -> Path:
+def build_index(output_dir: Optional[Path] = None, database_url: Optional[str] = None) -> Path:
     output = INDEX_DIR if output_dir is None else output_dir
     output.mkdir(parents=True, exist_ok=True)
     chunks = load_kb_chunks()
     embedder = Embedder()
     embeddings = embedder.encode([chunk.text for chunk in chunks]).astype("float32")
-    index = faiss.IndexFlatIP(embeddings.shape[1])
-    index.add(embeddings)
-    faiss.write_index(index, str(output / "kb.faiss"))
+    engine = get_engine(database_url)
+    ensure_schema(engine)
+    reset_chunks(engine)
+    rows = []
+    for chunk, embedding in zip(chunks, embeddings.tolist()):
+        rows.append(
+            {
+                "chunk_id": chunk.chunk_id,
+                "source_document": chunk.source,
+                "chunk_text": chunk.text,
+                "metadata_json": {"source": chunk.source},
+                "embedding": embedding,
+            }
+        )
+    insert_chunks(engine, rows)
     with (output / "metadata.pkl").open("wb") as handle:
-        pickle.dump({"chunks": chunks, "backend": embedder.backend}, handle)
+        pickle.dump({"chunks_indexed": len(chunks), "backend": embedder.backend}, handle)
     return output
 
 

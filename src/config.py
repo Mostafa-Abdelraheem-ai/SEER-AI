@@ -50,6 +50,8 @@ SENTENCE_MODEL_NAME = os.getenv("SEER_SENTENCE_MODEL", "sentence-transformers/al
 OPENAI_MODEL_NAME = os.getenv("SEER_OPENAI_MODEL", "gpt-4o-mini")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 USE_OPENAI = bool(OPENAI_API_KEY)
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+psycopg://seer:seer@localhost:5432/seer_ai_pp")
+EMBEDDING_DIMENSION = int(os.getenv("SEER_EMBEDDING_DIMENSION", "384"))
 
 MAX_CHUNK_SIZE = 450
 CHUNK_OVERLAP = 60

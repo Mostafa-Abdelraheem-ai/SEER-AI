@@ -1,0 +1,72 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    env_file:
+      - backend/.env.production
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-seer_ai_pp}
+      POSTGRES_USER: ${POSTGRES_USER:-seer}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-this-postgres-password}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-seer} -d ${POSTGRES_DB:-seer_ai_pp}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - backend/.env.production
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://seer:change-this-postgres-password@db:5432/seer_ai_pp}
+      PYTHONPATH: /app/backend:/app
+    expose:
+      - "8000"
+    command:
+      [
+        "sh",
+        "-c",
+        "alembic -c backend/alembic.ini upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers",
+      ]
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)",
+        ]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - uploads_data:/app/uploads
+      - reports_data:/app/outputs/reports
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      target: production
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-}
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+
+volumes:
+  postgres_data:
+  uploads_data:
+  reports_data:

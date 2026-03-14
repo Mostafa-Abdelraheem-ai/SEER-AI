@@ -4,7 +4,7 @@ scikit-learn
 torch
 transformers
 sentence-transformers
-faiss-cpu
+pgvector
 fastapi
 uvicorn
 pydantic

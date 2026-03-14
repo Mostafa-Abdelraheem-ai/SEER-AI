@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:16
+    image: pgvector/pgvector:pg16
     environment:
       POSTGRES_DB: seer_ai_pp
       POSTGRES_USER: seer
@@ -36,6 +36,7 @@ services:
     build:
       context: .
       dockerfile: frontend/Dockerfile
+      target: dev
     depends_on:
       - backend
     env_file:

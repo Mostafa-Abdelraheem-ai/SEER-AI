@@ -1,16 +1,30 @@
-# SEER-AI++ Full-Stack Platform
+# SEER-AI++
 
-SEER-AI++ is now a full-stack cybersecurity platform for detecting and investigating social-engineering attacks. The repository keeps the original AI core and refactors the application around it with a FastAPI backend, React + Vite + Tailwind frontend, PostgreSQL, SQLAlchemy, Alembic, Docker, and GitHub Actions.
+SEER-AI++ is a full-stack cybersecurity platform for detecting and investigating social-engineering scams across email, SMS, and chat. It combines classical NLP models, a hybrid risk engine, psychological tactic detection, PostgreSQL + pgvector retrieval, SOC-style reporting, a FastAPI backend, and a React dashboard.
 
-## Features
+## Overview
 
-- JWT-based authentication
-- protected REST API
-- PostgreSQL persistence for users, analyses, triggered rules, retrieved chunks, incident reports, and audit logs
-- React dashboard for analysis submission and investigation history
-- reusable AI orchestration layer around the existing `src` pipeline
-- Dockerized local environment
-- GitHub Actions for backend, frontend, and Docker checks
+The project started as an AI prototype for scam detection and was refactored into a production-style application:
+
+- Backend: FastAPI, SQLAlchemy, Alembic, JWT auth
+- Frontend: React, Vite, Tailwind CSS
+- Database: PostgreSQL
+- Vector retrieval: PostgreSQL + pgvector
+- Deployment: Docker Compose for local use and single-host EC2 deployment
+- AI core: preserved in [src](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/src)
+
+The platform accepts suspicious text, classifies likely attack type and persuasion tactic, computes a hybrid risk score, retrieves supporting knowledge-base evidence, and generates an analyst-style incident response summary.
+
+## Core Features
+
+- User registration, login, and protected API access
+- Message analysis for phishing, impersonation, financial fraud, credential harvesting, and related categories
+- Psychological tactic detection such as urgency, authority, fear, secrecy, and reward
+- Hybrid risk scoring from model confidence, rules, and RAG evidence
+- PostgreSQL persistence for users, analyses, triggered rules, retrieved chunks, reports, audit logs, and KB vectors
+- Knowledge-base retrieval using pgvector similarity search
+- React investigation dashboard for history, details, and reports
+- Dockerized local and EC2-ready deployment paths
 
 ## Architecture
 
@@ -28,52 +42,84 @@ flowchart LR
     CI[GitHub Actions] --> D[Dockerized Build and Delivery]
 ```
 
-## Folder Structure
+## High-Level Flow
+
+1. A user submits a suspicious message through the frontend or API.
+2. The backend calls the AI inference pipeline in [backend/app/ai/inference_pipeline.py](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/backend/app/ai/inference_pipeline.py).
+3. The risk engine in [src/risk_engine.py](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/src/risk_engine.py) performs:
+   - attack prediction
+   - tactic prediction
+   - rule-based scoring
+   - RAG retrieval from PostgreSQL + pgvector
+4. Explainability and agent modules generate plain-English reasoning and an incident report.
+5. The backend stores the analysis, retrieved chunks, triggered rules, and report in PostgreSQL.
+6. The frontend renders the result and preserves it in user history.
+
+## Repository Structure
 
 ```text
 seer_ai_pp/
 ├── backend/
 │   ├── app/
-│   │   ├── main.py
+│   │   ├── ai/
+│   │   ├── controllers/
 │   │   ├── core/
 │   │   ├── models/
-│   │   ├── schemas/
-│   │   ├── controllers/
-│   │   ├── services/
 │   │   ├── repositories/
-│   │   ├── ai/
-│   │   └── utils/
+│   │   ├── schemas/
+│   │   ├── services/
+│   │   └── main.py
 │   ├── alembic/
 │   ├── tests/
 │   ├── requirements.txt
 │   ├── Dockerfile
-│   └── .env.example
+│   ├── .env.example
+│   └── .env.production.example
 ├── frontend/
 │   ├── src/
-│   ├── package.json
 │   ├── Dockerfile
-│   └── .env.example
-├── src/
+│   ├── package.json
+│   ├── .env.example
+│   └── .env.production.example
+├── deploy/
+├── data/
 ├── outputs/
-├── uploads/
+├── src/
 ├── docker-compose.yml
-└── .github/workflows/
+├── docker-compose.prod.yml
+└── README.md
 ```
 
-## Reused AI Modules
+## AI and RAG Modules Reused
 
-The original prototype logic is still reused from:
+The refactor preserved the original AI core in [src](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/src):
 
-- `src/risk_engine.py`
-- `src/explainability.py`
-- `src/rag/*`
-- `src/agents/*`
+- [src/risk_engine.py](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/src/risk_engine.py)
+- [src/explainability.py](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/src/explainability.py)
+- [src/rag](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/src/rag)
+- [src/agents](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/src/agents)
 
-The new backend wraps them through:
+The main RAG change is that KB chunks and embeddings are now stored in PostgreSQL using pgvector instead of FAISS files. This keeps structured and semantic retrieval data in one database and simplifies deployment.
 
-- [backend/app/ai/inference_pipeline.py](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/backend/app/ai/inference_pipeline.py)
+## pgvector Migration Summary
 
-## Backend API Summary
+The RAG layer now uses:
+
+- `knowledge_chunks` table in PostgreSQL
+- pgvector `vector` extension
+- vector similarity search with cosine distance
+- KB indexing from [src/rag/build_index.py](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/src/rag/build_index.py)
+- retrieval from [src/rag/retriever.py](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/src/rag/retriever.py)
+
+The retriever still returns the same shape used by the rest of the app:
+
+- `retrieved_chunks`
+- `relevance_scores`
+- `synthesized_explanation`
+
+For lightweight tests and local non-Postgres smoke runs, the retriever includes a small SQLite-compatible fallback path.
+
+## API Summary
 
 Auth:
 
@@ -106,27 +152,19 @@ Health:
 
 ## Local Development
 
-### Local Startup Checklist
-
-- Start PostgreSQL and create the `seer_ai_pp` database if it does not exist yet.
-- Copy [backend/.env.example](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/backend/.env.example) to `backend/.env` for local backend runs.
-- Copy [frontend/.env.example](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/frontend/.env.example) to `frontend/.env` for local frontend runs.
-- Build the local RAG index and keep the existing `outputs/models` artifacts in place if you want the full AI path instead of only the test stubs.
-
 ### Backend
 
 ```bash
 cd "/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp"
 python3.10 -m venv .venv310
 source .venv310/bin/activate
-pip install -r backend/requirements.txt
+.venv310/bin/pip install -r backend/requirements.txt
 cp backend/.env.example backend/.env
 export PYTHONPATH=backend:.
 alembic -c backend/alembic.ini upgrade head
+python -m src.rag.build_index
 uvicorn app.main:app --app-dir backend --reload
 ```
-
-The local backend `.env.example` uses `localhost` for PostgreSQL. Docker Compose overrides that value to `db` automatically inside containers.
 
 ### Frontend
 
@@ -137,53 +175,170 @@ npm install
 npm run dev
 ```
 
-Frontend URL:
+Local URLs:
 
-- `http://localhost:5173`
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:8000`
+- Health: `http://localhost:8000/health`
 
-Backend URL:
+## Docker Development
 
-- `http://localhost:8000`
-
-## Docker Usage
+The development Docker stack keeps frontend, backend, and PostgreSQL separate and exposed:
 
 ```bash
 cd "/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp"
 docker compose up --build
 ```
 
-Services:
+Then initialize or rebuild the KB vectors:
 
-- frontend: `http://localhost:5173`
-- backend: `http://localhost:8000`
-- db: `localhost:5432`
+```bash
+docker compose exec backend alembic -c backend/alembic.ini upgrade head
+docker compose exec backend python -m src.rag.build_index
+```
 
-## Migrations
+Development services:
+
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:8000`
+- PostgreSQL: `localhost:5432`
+
+The DB image is `pgvector/pgvector:pg16`.
+
+## Production Deployment on EC2
+
+Production uses [docker-compose.prod.yml](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/docker-compose.prod.yml) plus the scripts in [deploy](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/deploy):
+
+- [deploy/ec2-setup.sh](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/deploy/ec2-setup.sh)
+- [deploy/deploy.sh](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/deploy/deploy.sh)
+- [deploy/backup-db.sh](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/deploy/backup-db.sh)
+- [deploy/restore-db.sh](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/deploy/restore-db.sh)
+- [deploy/DEPLOYMENT.md](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/deploy/DEPLOYMENT.md)
+
+Quick production path:
 
 ```bash
 cd "/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp"
+cp backend/.env.production.example backend/.env.production
+cp frontend/.env.production.example frontend/.env.production
+bash deploy/deploy.sh
+```
+
+Production setup serves the frontend through Nginx on port `80` and proxies `/api` and `/health` to the backend container.
+
+## Required Environment Variables
+
+Backend:
+
+- `APP_NAME`
+- `ENVIRONMENT`
+- `SECRET_KEY`
+- `ALGORITHM`
+- `ACCESS_TOKEN_EXPIRE_MINUTES`
+- `DATABASE_URL`
+- `CORS_ORIGINS`
+- `UPLOADS_DIR`
+- `REPORTS_DIR`
+- `SEER_EMBEDDING_DIMENSION`
+
+Production backend also uses:
+
+- `POSTGRES_DB`
+- `POSTGRES_USER`
+- `POSTGRES_PASSWORD`
+
+Frontend:
+
+- `VITE_API_BASE_URL`
+- `FRONTEND_PORT` for production compose
+
+## Database Migrations
+
+Run migrations locally:
+
+```bash
+cd "/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp"
+source .venv310/bin/activate
 export PYTHONPATH=backend:.
 alembic -c backend/alembic.ini upgrade head
 ```
 
-For a disposable local migration smoke test you can also run:
+Run migrations inside Docker:
+
+```bash
+docker compose exec backend alembic -c backend/alembic.ini upgrade head
+```
+
+## Rebuild the Knowledge Base Index
+
+Local:
 
 ```bash
 cd "/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp"
+source .venv310/bin/activate
 export PYTHONPATH=backend:.
-DATABASE_URL=sqlite:///./alembic_smoke.db alembic -c backend/alembic.ini upgrade head
+python -m src.rag.build_index
+```
+
+Docker:
+
+```bash
+docker compose exec backend python -m src.rag.build_index
+```
+
+Production Docker:
+
+```bash
+docker compose -f docker-compose.prod.yml exec -T backend python -m src.rag.build_index
+```
+
+## Tests and Validation
+
+Backend tests:
+
+```bash
+cd "/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp"
+source .venv310/bin/activate
+export PYTHONPATH=backend:.
+pytest backend/tests tests/test_rag.py -q
+```
+
+Frontend build:
+
+```bash
+cd "/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/frontend"
+npm run build
+```
+
+Compose validation:
+
+```bash
+docker compose -f docker-compose.yml config
+docker compose -f docker-compose.prod.yml config
 ```
 
 ## CI/CD
 
-Workflows in [.github/workflows](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/.github/workflows):
+GitHub Actions live in [.github/workflows](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/.github/workflows):
 
 - `backend-ci.yml`
 - `frontend-ci.yml`
 - `docker.yml`
 
+The Docker workflow validates both development and production Compose files and then builds the images.
+
+## Why pgvector
+
+pgvector was chosen because it:
+
+- keeps relational application data and semantic retrieval in one PostgreSQL deployment
+- avoids introducing a separate vector database
+- fits local Docker and single-host EC2 deployment well
+- keeps the system simpler for a graduation project while still looking production-oriented
+
 ## Notes
 
 - Streamlit is no longer the main application path.
-- Offline-safe AI behavior is preserved through the existing local models and RAG fallback.
-- The backend keeps the controller, service, repository, model, and schema separation required for review clarity.
+- The app remains offline-friendly through local artifacts and deterministic fallbacks.
+- The backend preserves controller/service/repository separation.
+- For EC2, expose only `22` and `80` publicly unless you explicitly need more.

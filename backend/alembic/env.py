@@ -7,7 +7,7 @@ from sqlalchemy import engine_from_config, pool
 
 from app.core.config import get_settings
 from app.core.database import Base
-from app.models import analysis, audit_log, incident_report, retrieved_chunk, triggered_rule, user  # noqa: F401
+from app.models import analysis, audit_log, incident_report, knowledge_chunk, retrieved_chunk, triggered_rule, user  # noqa: F401
 
 
 config = context.config

@@ -12,7 +12,7 @@ from app.controllers.health_controller import router as health_router
 from app.controllers.report_controller import router as report_router
 from app.core.config import get_settings
 from app.core.database import init_db
-from app.models import analysis, audit_log, incident_report, retrieved_chunk, triggered_rule, user  # noqa: F401
+from app.models import analysis, audit_log, incident_report, knowledge_chunk, retrieved_chunk, triggered_rule, user  # noqa: F401
 
 
 settings = get_settings()
