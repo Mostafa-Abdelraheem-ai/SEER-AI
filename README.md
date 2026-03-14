@@ -11,7 +11,7 @@ The project started as an AI prototype for scam detection and was refactored int
 - Database: PostgreSQL
 - Vector retrieval: PostgreSQL + pgvector
 - Deployment: Docker Compose for local use and single-host EC2 deployment
-- AI core: preserved in [src](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/src)
+- AI core: preserved in `src/`
 
 The platform accepts suspicious text, classifies likely attack type and persuasion tactic, computes a hybrid risk score, retrieves supporting knowledge-base evidence, and generates an analyst-style incident response summary.
 
@@ -45,8 +45,8 @@ flowchart LR
 ## High-Level Flow
 
 1. A user submits a suspicious message through the frontend or API.
-2. The backend calls the AI inference pipeline in [backend/app/ai/inference_pipeline.py](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/backend/app/ai/inference_pipeline.py).
-3. The risk engine in [src/risk_engine.py](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/src/risk_engine.py) performs:
+2. The backend calls the AI inference pipeline in `backend/app/ai/inference_pipeline.py`.
+3. The risk engine in `src/risk_engine.py` performs:
    - attack prediction
    - tactic prediction
    - rule-based scoring
@@ -92,12 +92,12 @@ seer_ai_pp/
 
 ## AI and RAG Modules Reused
 
-The refactor preserved the original AI core in [src](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/src):
+The refactor preserved the original AI core in `src/`:
 
-- [src/risk_engine.py](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/src/risk_engine.py)
-- [src/explainability.py](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/src/explainability.py)
-- [src/rag](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/src/rag)
-- [src/agents](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/src/agents)
+- `src/risk_engine.py`
+- `src/explainability.py`
+- `src/rag/`
+- `src/agents/`
 
 The main RAG change is that KB chunks and embeddings are now stored in PostgreSQL using pgvector instead of FAISS files. This keeps structured and semantic retrieval data in one database and simplifies deployment.
 
@@ -108,8 +108,8 @@ The RAG layer now uses:
 - `knowledge_chunks` table in PostgreSQL
 - pgvector `vector` extension
 - vector similarity search with cosine distance
-- KB indexing from [src/rag/build_index.py](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/src/rag/build_index.py)
-- retrieval from [src/rag/retriever.py](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/src/rag/retriever.py)
+- KB indexing from `src/rag/build_index.py`
+- retrieval from `src/rag/retriever.py`
 
 The retriever still returns the same shape used by the rest of the app:
 
@@ -155,7 +155,7 @@ Health:
 ### Backend
 
 ```bash
-cd "/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp"
+cd seer_ai_pp
 python3.10 -m venv .venv310
 source .venv310/bin/activate
 .venv310/bin/pip install -r backend/requirements.txt
@@ -169,7 +169,7 @@ uvicorn app.main:app --app-dir backend --reload
 ### Frontend
 
 ```bash
-cd "/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/frontend"
+cd frontend
 cp .env.example .env
 npm install
 npm run dev
@@ -186,7 +186,7 @@ Local URLs:
 The development Docker stack keeps frontend, backend, and PostgreSQL separate and exposed:
 
 ```bash
-cd "/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp"
+cd seer_ai_pp
 docker compose up --build
 ```
 
@@ -207,18 +207,18 @@ The DB image is `pgvector/pgvector:pg16`.
 
 ## Production Deployment on EC2
 
-Production uses [docker-compose.prod.yml](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/docker-compose.prod.yml) plus the scripts in [deploy](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/deploy):
+Production uses `docker-compose.prod.yml` plus the scripts in `deploy/`:
 
-- [deploy/ec2-setup.sh](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/deploy/ec2-setup.sh)
-- [deploy/deploy.sh](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/deploy/deploy.sh)
-- [deploy/backup-db.sh](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/deploy/backup-db.sh)
-- [deploy/restore-db.sh](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/deploy/restore-db.sh)
-- [deploy/DEPLOYMENT.md](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/deploy/DEPLOYMENT.md)
+- `deploy/ec2-setup.sh`
+- `deploy/deploy.sh`
+- `deploy/backup-db.sh`
+- `deploy/restore-db.sh`
+- `deploy/DEPLOYMENT.md`
 
 Quick production path:
 
 ```bash
-cd "/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp"
+cd seer_ai_pp
 cp backend/.env.production.example backend/.env.production
 cp frontend/.env.production.example frontend/.env.production
 bash deploy/deploy.sh
@@ -257,7 +257,7 @@ Frontend:
 Run migrations locally:
 
 ```bash
-cd "/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp"
+cd seer_ai_pp
 source .venv310/bin/activate
 export PYTHONPATH=backend:.
 alembic -c backend/alembic.ini upgrade head
@@ -274,7 +274,7 @@ docker compose exec backend alembic -c backend/alembic.ini upgrade head
 Local:
 
 ```bash
-cd "/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp"
+cd seer_ai_pp
 source .venv310/bin/activate
 export PYTHONPATH=backend:.
 python -m src.rag.build_index
@@ -297,7 +297,7 @@ docker compose -f docker-compose.prod.yml exec -T backend python -m src.rag.buil
 Backend tests:
 
 ```bash
-cd "/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp"
+cd seer_ai_pp
 source .venv310/bin/activate
 export PYTHONPATH=backend:.
 pytest backend/tests tests/test_rag.py -q
@@ -306,7 +306,7 @@ pytest backend/tests tests/test_rag.py -q
 Frontend build:
 
 ```bash
-cd "/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/frontend"
+cd frontend
 npm run build
 ```
 
@@ -319,7 +319,7 @@ docker compose -f docker-compose.prod.yml config
 
 ## CI/CD
 
-GitHub Actions live in [.github/workflows](/Users/mostafaabdelraheem/Documents/New project/seer_ai_pp/.github/workflows):
+GitHub Actions live in `.github/workflows/`:
 
 - `backend-ci.yml`
 - `frontend-ci.yml`
