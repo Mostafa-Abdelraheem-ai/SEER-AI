@@ -15,6 +15,7 @@ from app.services.audit_service import AuditService
 from app.services.email_safety_service import EmailSafetyService
 from app.services.hash_safety_service import HashSafetyService
 from app.services.image_privacy_service import ImagePrivacyService
+from app.observability.metrics import record_risk
 from app.services.safety_language_service import build_user_advice, risk_to_verdict, verdict_label
 from app.services.url_safety_service import UrlSafetyService, extract_urls
 from app.services.voice_safety_service import VoiceSafetyService
@@ -63,11 +64,18 @@ class SafetyScanService:
                 "attack_prediction": ai_result["attack_prediction"],
                 "tactic_prediction": ai_result["tactic_prediction"],
                 "confidence": ai_result["confidence"],
+                "tactics": ai_result.get("tactics", []),
+                "citations": ai_result.get("citations", []),
+                "provider_path": ai_result.get("provider_path", {}),
+                "degraded_mode": ai_result.get("degraded_mode", False),
+                "evidence_summary": ai_result.get("evidence_summary", []),
+                "token_usage": ai_result.get("token_usage", {}),
             },
         )
 
     def check_voice(self, current_user: User, file_bytes: bytes, filename: str, transcript_hint: str | None) -> SafetyScanResponse:
         transcription = self.voice_service.transcribe(file_bytes=file_bytes, filename=filename, transcript_hint=transcript_hint)
+        acoustic = self.voice_service.analyze_acoustics(file_bytes=file_bytes, filename=filename)
         if transcription.transcript:
             result = self.check_message(current_user, transcription.transcript, "voice")
             updated = self.repository.get_by_id(result.id)
@@ -75,8 +83,33 @@ class SafetyScanService:
                 updated.scan_type = "voice"
                 updated.title = "Voice message safety check"
                 updated.transcript = transcription.transcript
-                updated.limitations_json = transcription.limitations
-                updated.metadata_json = {**(updated.metadata_json or {}), "filename": filename, "used_transcript_hint": transcription.used_hint}
+                extra_limitations = transcription.limitations + acoustic.limitations
+                updated.limitations_json = extra_limitations
+                metadata = dict(updated.metadata_json or {})
+                metadata["filename"] = filename
+                metadata["used_transcript_hint"] = transcription.used_hint
+                metadata["acoustic_analysis"] = {
+                    "urgency_score": acoustic.urgency_score,
+                    "stress_score": acoustic.stress_score,
+                    "intensity_score": acoustic.intensity_score,
+                    "findings": acoustic.findings,
+                    "provider": acoustic.provider,
+                }
+                updated.metadata_json = metadata
+                if acoustic.findings:
+                    updated.findings_json = list(updated.findings_json or []) + [
+                        {
+                            "label": "Voice tone",
+                            "value": "Acoustic signal analysis",
+                            "note": finding,
+                            "severity": "warning",
+                        }
+                        for finding in acoustic.findings
+                    ]
+                    updated.explanation = f"{updated.explanation} The voice delivery also added pressure cues: {' '.join(acoustic.findings)}".strip()
+                    updated.risk_score = min(100, updated.risk_score + 8)
+                    updated.summary = f"{verdict_label(risk_to_verdict(updated.risk_score))}: voice check complete."
+                    updated.advice = build_user_advice(risk_to_verdict(updated.risk_score), 'voice')
                 self.db.commit()
                 self.db.refresh(updated)
                 return self._serialize(updated)
@@ -91,8 +124,27 @@ class SafetyScanService:
             explanation="We need a transcript before we can judge whether the message sounds manipulative or scam-like.",
             advice="If possible, paste what you heard or try again with automatic transcription configured.",
             transcript=transcription.transcript,
-            limitations=transcription.limitations,
-            metadata={"filename": filename},
+            limitations=transcription.limitations + acoustic.limitations,
+            findings=[
+                SafetyFinding(
+                    label="Voice tone",
+                    value="Acoustic signal analysis",
+                    note=finding,
+                    severity="warning",
+                )
+                for finding in acoustic.findings
+            ],
+            metadata={
+                "filename": filename,
+                "degraded_mode": True,
+                "acoustic_analysis": {
+                    "urgency_score": acoustic.urgency_score,
+                    "stress_score": acoustic.stress_score,
+                    "intensity_score": acoustic.intensity_score,
+                    "findings": acoustic.findings,
+                    "provider": acoustic.provider,
+                },
+            },
         )
 
     def check_email_text(self, current_user: User, raw_email_text: str) -> SafetyScanResponse:
@@ -258,6 +310,7 @@ class SafetyScanService:
             metadata_json=metadata or {},
         )
         saved = self.repository.create(scan)
+        record_risk(scan_type, risk_score)
         self.audit.log(current_user.id, "safety_scan.create", f"Created {scan_type} scan {saved.id}")
         return self._serialize(saved)
 
@@ -272,12 +325,16 @@ class SafetyScanService:
             summary=scan.summary,
             explanation=scan.explanation,
             advice=scan.advice,
+            confidence=(scan.metadata_json or {}).get("confidence"),
             created_at=scan.created_at,
             input_text=scan.input_text,
             transcript=scan.transcript,
             extracted_urls=scan.extracted_urls_json or [],
             findings=[SafetyFinding(**item) for item in (scan.findings_json or [])],
+            tactics=(scan.metadata_json or {}).get("tactics", []),
+            citations=(scan.metadata_json or {}).get("citations", []),
             parsed_email=scan.parsed_email_json,
             limitations=scan.limitations_json or [],
+            degraded_mode=bool((scan.metadata_json or {}).get("degraded_mode", False)),
             metadata=scan.metadata_json,
         )

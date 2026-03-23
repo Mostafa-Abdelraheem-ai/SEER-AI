@@ -4,7 +4,7 @@ const ThemeContext = createContext(null);
 const STORAGE_KEY = "seer_theme";
 
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState(() => localStorage.getItem(STORAGE_KEY) || "light");
+  const [theme, setTheme] = useState(() => localStorage.getItem(STORAGE_KEY) || "dark");
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, theme);

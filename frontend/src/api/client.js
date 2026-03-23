@@ -1,5 +1,7 @@
 import axios from "axios";
 
+import { trackApiError, trackApiMetric } from "../services/telemetry";
+
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "",
 });
@@ -9,7 +11,40 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  config.headers["X-Request-Id"] = crypto.randomUUID();
+  config.metadata = { startedAt: performance.now() };
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => {
+    const durationMs = Math.round(performance.now() - (response.config.metadata?.startedAt || performance.now()));
+    trackApiMetric({
+      url: response.config.url,
+      method: response.config.method?.toUpperCase(),
+      durationMs,
+      status: response.status,
+      ok: true,
+    });
+    return response;
+  },
+  (error) => {
+    const durationMs = Math.round(performance.now() - (error.config?.metadata?.startedAt || performance.now()));
+    trackApiMetric({
+      url: error.config?.url,
+      method: error.config?.method?.toUpperCase(),
+      durationMs,
+      status: error.response?.status || 0,
+      ok: false,
+    });
+    trackApiError({
+      url: error.config?.url,
+      method: error.config?.method?.toUpperCase(),
+      status: error.response?.status || 0,
+      message: error.response?.data?.detail || error.message,
+    });
+    return Promise.reject(error);
+  }
+);
 
 export default api;

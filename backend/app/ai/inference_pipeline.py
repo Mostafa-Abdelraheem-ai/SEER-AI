@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict
 
+from app.ai.runtime import SafetyAIRuntime
+
 
 @dataclass
 class InferencePipeline:
@@ -12,9 +14,7 @@ class InferencePipeline:
 
     def _ensure_components(self) -> None:
         if self.engine is None:
-            from app.ai.risk_engine import RiskEngine
-
-            self.engine = RiskEngine()
+            self.engine = SafetyAIRuntime()
         if self.analyst_agent is None or self.report_agent is None:
             from app.ai.agents import IncidentReportAgent, SOCAnalystAgent
 
@@ -27,19 +27,25 @@ class InferencePipeline:
         from app.ai.explainability import explain_message
 
         self._ensure_components()
-        prediction = self.engine.analyze(text)
+        prediction = self.engine.analyze_message(text, channel)
         explanation = explain_message(text, prediction)
         analyst_summary = self.analyst_agent.summarize(text, prediction)
         incident_report = self.report_agent.generate_report(text, prediction)
         return {
             "attack_prediction": prediction["attack_prediction"],
             "tactic_prediction": prediction["tactic_prediction"],
+            "tactics": prediction.get("tactics", []),
             "confidence": prediction["confidence"],
             "risk_score": prediction["risk_score"],
             "explanation": prediction["explanation"],
             "recommended_action": prediction["recommended_action"],
             "triggered_rules": prediction["triggered_rules"],
             "retrieved_chunks": prediction["retrieved_chunks"],
+            "citations": prediction.get("citations", []),
+            "evidence_summary": prediction.get("evidence_summary", []),
+            "degraded_mode": prediction.get("degraded_mode", False),
+            "provider_path": prediction.get("provider_path", {}),
+            "token_usage": prediction.get("token_usage", {}),
             "incident_report": incident_report,
             "analyst_summary": analyst_summary,
             "channel": channel,

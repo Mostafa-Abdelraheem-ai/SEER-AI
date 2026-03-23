@@ -2,15 +2,15 @@ export default function SeerLogo({ className = "", compact = false, showWordmark
   return (
     <div className={`flex items-center ${compact ? "gap-3" : "gap-4"} ${className}`}>
       <div className={`relative ${compact ? "h-11 w-11" : "h-16 w-16"} shrink-0`}>
-        <svg viewBox="0 0 120 132" className="h-full w-full drop-shadow-[0_10px_30px_rgba(21,143,200,0.35)]" aria-hidden="true">
+        <svg viewBox="0 0 120 132" className="h-full w-full drop-shadow-[0_16px_40px_rgba(21,143,200,0.35)]" aria-hidden="true">
           <defs>
             <linearGradient id="seer-shield" x1="0%" x2="100%" y1="0%" y2="100%">
-              <stop offset="0%" stopColor="#08152a" />
+              <stop offset="0%" stopColor="#071220" />
               <stop offset="100%" stopColor="#0d2741" />
             </linearGradient>
             <linearGradient id="seer-eye" x1="0%" x2="100%" y1="0%" y2="0%">
-              <stop offset="0%" stopColor="#22b5f6" />
-              <stop offset="100%" stopColor="#67d3ff" />
+              <stop offset="0%" stopColor="#38bdf8" />
+              <stop offset="100%" stopColor="#8b5cf6" />
             </linearGradient>
           </defs>
           <path
@@ -38,10 +38,10 @@ export default function SeerLogo({ className = "", compact = false, showWordmark
       </div>
       {showWordmark ? (
         <div>
-          <div className={`${compact ? "text-lg" : "text-2xl"} font-black uppercase tracking-[0.28em] text-slate-50`}>
+          <div className={`${compact ? "text-lg" : "text-2xl"} font-black uppercase tracking-[0.28em] text-[color:var(--seer-text)]`}>
             Seer-AI
           </div>
-          {!compact ? <div className="text-xs uppercase tracking-[0.34em] text-cyan-200/80">Cyber defense cockpit</div> : null}
+          {!compact ? <div className="text-xs uppercase tracking-[0.34em] text-cyan-300/80">Multimodal threat intelligence</div> : null}
         </div>
       ) : null}
     </div>

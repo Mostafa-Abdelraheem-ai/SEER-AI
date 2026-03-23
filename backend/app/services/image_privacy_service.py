@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from io import BytesIO
 
-from PIL import Image
+from PIL import Image, ImageFilter, ImageOps
 
 try:
     import pytesseract
@@ -15,10 +15,28 @@ SENSITIVE_PATTERNS = {
     "Email address": re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"),
     "Phone number": re.compile(r"(?:\+?\d[\d\s().-]{7,}\d)"),
     "Card-like number": re.compile(r"\b(?:\d[ -]*?){13,19}\b"),
+    "National ID-like number": re.compile(r"\b\d{9,14}\b"),
+    "Address hint": re.compile(r"\b\d{1,5}\s+[A-Za-z0-9.\- ]+\s(?:street|st|road|rd|avenue|ave|lane|ln|drive|dr)\b", re.IGNORECASE),
+    "Passport-like code": re.compile(r"\b[A-Z]{1,2}\d{6,9}\b"),
 }
 
 
 class ImagePrivacyService:
+    @staticmethod
+    def _preprocess(image: Image.Image) -> list[tuple[str, Image.Image]]:
+        rgb = image.convert("RGB")
+        gray = ImageOps.grayscale(rgb)
+        enhanced = ImageOps.autocontrast(gray)
+        sharp = enhanced.filter(ImageFilter.SHARPEN)
+        binary = sharp.point(lambda pixel: 255 if pixel > 155 else 0)
+        upscaled = sharp.resize((sharp.width * 2, sharp.height * 2))
+        return [
+            ("raw", rgb),
+            ("enhanced", sharp),
+            ("binary", binary),
+            ("upscaled", upscaled),
+        ]
+
     def inspect(self, image_bytes: bytes, filename: str) -> dict:
         if pytesseract is None:
             return {
@@ -34,23 +52,42 @@ class ImagePrivacyService:
             }
 
         image = Image.open(BytesIO(image_bytes))
-        ocr_data = pytesseract.image_to_data(image, output_type=pytesseract.Output.DICT)
         words = []
-        for index, text in enumerate(ocr_data["text"]):
-            value = (text or "").strip()
-            if not value:
-                continue
-            words.append(
-                {
-                    "text": value,
-                    "left": int(ocr_data["left"][index]),
-                    "top": int(ocr_data["top"][index]),
-                    "width": int(ocr_data["width"][index]),
-                    "height": int(ocr_data["height"][index]),
-                }
-            )
+        best_text = ""
+        best_confidence = -1.0
+        for variant_name, variant in self._preprocess(image):
+            ocr_data = pytesseract.image_to_data(variant, output_type=pytesseract.Output.DICT)
+            candidate_words = []
+            confidences = []
+            for index, text in enumerate(ocr_data["text"]):
+                value = (text or "").strip()
+                if not value:
+                    continue
+                confidence_raw = ocr_data["conf"][index]
+                try:
+                    confidence = float(confidence_raw)
+                except Exception:
+                    confidence = -1.0
+                if confidence >= 0:
+                    confidences.append(confidence)
+                candidate_words.append(
+                    {
+                        "text": value,
+                        "left": int(ocr_data["left"][index]),
+                        "top": int(ocr_data["top"][index]),
+                        "width": int(ocr_data["width"][index]),
+                        "height": int(ocr_data["height"][index]),
+                        "variant": variant_name,
+                    }
+                )
+            candidate_text = " ".join(word["text"] for word in candidate_words)
+            average_confidence = sum(confidences) / len(confidences) if confidences else -1.0
+            if len(candidate_text) > len(best_text) or average_confidence > best_confidence:
+                best_text = candidate_text
+                best_confidence = average_confidence
+                words = candidate_words
 
-        extracted_text = " ".join(word["text"] for word in words)
+        extracted_text = best_text
         findings = []
         for label, pattern in SENSITIVE_PATTERNS.items():
             for match in pattern.finditer(extracted_text):
@@ -85,5 +122,5 @@ class ImagePrivacyService:
             "score": score,
             "verdict": verdict,
             "limitations": limitations,
-            "metadata": {"filename": filename, "image_size": image.size},
+            "metadata": {"filename": filename, "image_size": image.size, "ocr_confidence_estimate": round(max(best_confidence, 0.0), 2)},
         }
