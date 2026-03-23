@@ -31,7 +31,14 @@ class Settings(BaseSettings):
     reports_dir: str = str(ROOT_DIR / "outputs" / "reports")
     webhook_secret: str = "change-me-webhook-secret"
     audio_transcription_model: str = "whisper-1"
+    openai_generation_model: str = "gpt-4o-mini"
     openai_api_key: str | None = None
+    metrics_enabled: bool = True
+    log_level: str = "INFO"
+    text_model_provider: str = "hybrid"
+    rag_generation_provider: str = "openai"
+    ocr_provider: str = "tesseract"
+    voice_acoustic_provider: str = "signal"
     model_config = SettingsConfigDict(
         env_file=str(ROOT_DIR / "backend" / ".env"),
         env_file_encoding="utf-8",

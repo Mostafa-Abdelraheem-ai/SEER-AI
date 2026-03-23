@@ -24,15 +24,17 @@ The platform can now help answer questions like:
 ## Core Features
 
 - User registration, login, and protected API access
+- Hybrid text analysis with legacy classifiers plus a configurable cloud-augmented reasoning path
 - Message safety checks for scam, impersonation, pressure, urgency, and manipulation signals
 - Email parsing for pasted emails and `.eml` uploads, including sender, reply-to, subject, links, and attachment metadata
-- Link checks with local heuristic explanations and honest limitations
+- Link checks with local heuristics plus connector-ready enrichment hooks
 - File hash checks with format recognition and clear wording when no threat database is configured
-- Voice-note checks with optional transcription and transcript-based scam analysis
-- Image privacy checks using OCR plus sensitive-information pattern matching
-- Hybrid risk scoring from model confidence, rules, and RAG evidence
+- Voice-note checks with optional transcription, transcript analysis, and acoustic pressure scoring
+- Image privacy checks using multi-pass OCR preprocessing plus sensitive-information pattern matching
+- Hybrid risk scoring from model confidence, rules, retrieval evidence, and multimodal fusion
 - PostgreSQL persistence for users, analyses, safety checks, triggered rules, retrieved chunks, reports, audit logs, and KB vectors
 - Knowledge-base retrieval using pgvector similarity search
+- Prometheus metrics, structured logs, request IDs, readiness/liveness endpoints, and Grafana dashboards
 - React dashboard for consumer-friendly safety checks, history, and reports
 - Dockerized local and EC2-ready deployment paths
 
@@ -161,6 +163,9 @@ Dashboard:
 Health:
 
 - `GET /health`
+- `GET /health/live`
+- `GET /health/ready`
+- `GET /metrics`
 
 Safety checks:
 
@@ -222,9 +227,13 @@ Optional feature configuration:
 - `WEBHOOK_SECRET`
   Use this if you want to accept external safety-check webhooks.
 - `OPENAI_API_KEY`
-  Optional. If provided, voice-note transcription can use the configured audio transcription model.
+  Optional. If provided, the backend can use OpenAI for grounded RAG explanations and voice-note transcription.
 - `AUDIO_TRANSCRIPTION_MODEL`
   Defaults to `whisper-1`.
+- `OPENAI_GENERATION_MODEL`
+  Defaults to `gpt-4o-mini`.
+- `METRICS_ENABLED`
+  Enables the `/metrics` endpoint for Prometheus scraping.
 
 OCR support:
 
@@ -244,6 +253,11 @@ Expected local URLs:
 - Backend: `http://localhost:8000`
 - Docs: `http://localhost:8000/docs`
 - Health: `http://localhost:8000/health`
+- Liveness: `http://localhost:8000/health/live`
+- Readiness: `http://localhost:8000/health/ready`
+- Metrics: `http://localhost:8000/metrics`
+- Prometheus: `http://localhost:9090`
+- Grafana: `http://localhost:3000`
 
 Consumer-facing safety tools in the app:
 
@@ -268,7 +282,40 @@ Important limitations:
 - Link checks use local heuristics and do not guarantee a link is safe.
 - Hash checks validate the hash format and can explain limits, but they do not query a live threat database by default.
 - Image privacy checks rely on OCR and pattern matching, so they may miss text or flag partial matches.
-- Voice-note analysis is strongest when transcription is available. Without a transcript or optional transcription provider, the result will explain that limitation.
+- Voice-note analysis is strongest when transcription is available and the file is a clean WAV recording. Other formats may fall back to transcript-led analysis.
+
+## Architecture Notes
+
+Detailed architecture notes live in:
+
+- `docs/architecture/multimodal-platform.md`
+
+That document covers:
+
+- current architecture
+- target multimodal architecture
+- pipeline design
+- monitoring design
+- model/fallback tradeoffs
+
+## Monitoring And Observability
+
+The local platform now includes:
+
+- Prometheus scraping the backend `/metrics` endpoint
+- Grafana with a preprovisioned SEER-AI dashboard
+- structured JSON logs with request IDs
+- per-request latency and throughput metrics
+- model latency metrics
+- retrieval quality proxy metrics
+- OpenAI token usage counters
+- fallback/degraded-mode counters
+- process CPU and memory gauges
+
+Default Grafana login:
+
+- username: `admin`
+- password: `admin`
 
 ## Clean Local Reset
 

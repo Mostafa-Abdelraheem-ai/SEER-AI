@@ -4,6 +4,8 @@ import ipaddress
 import re
 from urllib.parse import urlparse
 
+from app.services.indicator_enrichment_service import IndicatorEnrichmentService
+
 
 URL_REGEX = re.compile(r"https?://[^\s<>\"]+|www\.[^\s<>\"]+", re.IGNORECASE)
 SHORTENERS = {"bit.ly", "tinyurl.com", "t.co", "goo.gl", "ow.ly", "buff.ly", "is.gd"}
@@ -22,6 +24,9 @@ def extract_urls(text: str) -> list[str]:
 
 
 class UrlSafetyService:
+    def __init__(self) -> None:
+        self.enrichment = IndicatorEnrichmentService()
+
     def inspect(self, url: str) -> dict:
         parsed = urlparse(url if url.startswith("http") else f"https://{url}")
         host = (parsed.netloc or parsed.path).lower()
@@ -69,6 +74,11 @@ class UrlSafetyService:
             reasons.append("It includes a long tracking or redirect-style query string.")
             score += 10
 
+        enrichments = self.enrichment.enrich_url(parsed.geturl(), host_without_port)
+        for enrichment in enrichments:
+            reasons.extend(enrichment.reasons)
+            score += enrichment.score_delta
+
         verdict = "likely_safe"
         if score >= 65:
             verdict = "suspicious"
@@ -84,6 +94,7 @@ class UrlSafetyService:
             "score": min(score, 100),
             "verdict": verdict,
             "reasons": reasons,
+            "enrichments": [item.__dict__ for item in enrichments],
             "limitations": [
                 "We did not visit the website directly.",
                 "A normal-looking link can still be unsafe.",

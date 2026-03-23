@@ -40,6 +40,17 @@ class SafetyFinding(BaseModel):
     severity: str = "info"
 
 
+class SafetyTactic(BaseModel):
+    label: str
+    confidence: float
+
+
+class SafetyCitation(BaseModel):
+    source: str
+    snippet: str
+    score: float
+
+
 class ParsedEmailResponse(BaseModel):
     sender: str | None = None
     subject: str | None = None
@@ -58,13 +69,17 @@ class SafetyScanResponse(BaseModel):
     summary: str
     explanation: str
     advice: str
+    confidence: float | None = None
     created_at: datetime
     input_text: str | None = None
     transcript: str | None = None
     extracted_urls: list[str] = []
     findings: list[SafetyFinding] = []
+    tactics: list[SafetyTactic] = []
+    citations: list[SafetyCitation] = []
     parsed_email: ParsedEmailResponse | None = None
     limitations: list[str] = []
+    degraded_mode: bool = False
     metadata: dict[str, Any] | None = None
 
 

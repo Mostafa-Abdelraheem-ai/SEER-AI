@@ -76,11 +76,13 @@ class RiskEngine:
         rules = self._rule_score(text)
         retrieval = self.retriever.retrieve(text, top_k=3)
         retrieval_score = retrieval["relevance_scores"][0] if retrieval["relevance_scores"] else 0.0
+        rule_bonus = 0.12 if len(rules["triggered_rules"]) >= 3 else 0.0
         final_risk = (
             0.50 * _normalize(attack["confidence"])
             + 0.20 * _normalize(tactic["confidence"])
             + 0.20 * _normalize(rules["score"])
             + 0.10 * _normalize(retrieval_score)
+            + rule_bonus
         )
         risk_score = int(round(final_risk * 100))
         recommended_action = self._recommended_action(attack["label"], risk_score)

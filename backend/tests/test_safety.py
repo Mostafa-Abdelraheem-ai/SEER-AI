@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+import io
+import wave
+
+import numpy as np
+
 from app.services.image_privacy_service import ImagePrivacyService
 from app.services.voice_safety_service import VoiceTranscriptionResult, VoiceSafetyService
 
@@ -20,15 +25,23 @@ def test_voice_check_endpoint(client, monkeypatch) -> None:
 
     monkeypatch.setattr(VoiceSafetyService, "transcribe", fake_transcribe)
     token = _token(client)
+    audio_buffer = io.BytesIO()
+    with wave.open(audio_buffer, "wb") as wav_file:
+        wav_file.setnchannels(1)
+        wav_file.setsampwidth(2)
+        wav_file.setframerate(16000)
+        samples = (np.sin(np.linspace(0, 1200, 16000)) * 32767).astype(np.int16)
+        wav_file.writeframes(samples.tobytes())
     response = client.post(
         "/api/safety/voice",
-        files={"audio_file": ("voice-note.wav", b"fake-audio-bytes", "audio/wav")},
+        files={"audio_file": ("voice-note.wav", audio_buffer.getvalue(), "audio/wav")},
         headers={"Authorization": f"Bearer {token}"},
     )
     assert response.status_code == 200
     body = response.json()
     assert body["scan_type"] == "voice"
     assert body["transcript"]
+    assert "acoustic_analysis" in body["metadata"]
 
 
 def test_email_parsing_endpoint(client) -> None:
@@ -133,3 +146,17 @@ def test_image_privacy_endpoint(client, monkeypatch) -> None:
     body = response.json()
     assert body["scan_type"] == "image_privacy"
     assert body["verdict"] == "private_info_detected"
+
+
+def test_voice_acoustic_analysis_detects_signal() -> None:
+    service = VoiceSafetyService()
+    audio_buffer = io.BytesIO()
+    with wave.open(audio_buffer, "wb") as wav_file:
+        wav_file.setnchannels(1)
+        wav_file.setsampwidth(2)
+        wav_file.setframerate(16000)
+        samples = (np.sin(np.linspace(0, 2400, 16000)) * 28000).astype(np.int16)
+        wav_file.writeframes(samples.tobytes())
+    result = service.analyze_acoustics(audio_buffer.getvalue(), "sample.wav")
+    assert result.provider == "signal"
+    assert result.intensity_score >= 0.0

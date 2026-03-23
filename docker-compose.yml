@@ -35,6 +35,13 @@ services:
       UPLOADS_DIR: /app/uploads
       REPORTS_DIR: /app/outputs/reports
       SEER_EMBEDDING_DIMENSION: 384
+      OPENAI_GENERATION_MODEL: gpt-4o-mini
+      METRICS_ENABLED: "true"
+      LOG_LEVEL: INFO
+      TEXT_MODEL_PROVIDER: hybrid
+      RAG_GENERATION_PROVIDER: openai
+      OCR_PROVIDER: tesseract
+      VOICE_ACOUSTIC_PROVIDER: signal
       PYTHONPATH: /app/backend:/app
     healthcheck:
       test:
@@ -42,7 +49,7 @@ services:
           "CMD",
           "python",
           "-c",
-          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=3)"
         ]
       interval: 10s
       timeout: 5s
@@ -51,6 +58,33 @@ services:
       - "8000:8000"
     volumes:
       - .:/app
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./ops/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./ops/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./ops/grafana/dashboards:/var/lib/grafana/dashboards:ro
 
   frontend:
     build:

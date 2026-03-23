@@ -25,3 +25,5 @@ httpx
 openai
 Pillow
 pytesseract
+prometheus-client
+psutil

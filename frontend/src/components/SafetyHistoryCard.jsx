@@ -6,7 +6,7 @@ export default function SafetyHistoryCard({ item, onOpen }) {
     <button
       type="button"
       onClick={() => onOpen(item.id)}
-      className="glass-panel w-full rounded-[28px] p-5 text-left transition hover:translate-y-[-2px]"
+      className="glass-panel w-full rounded-[28px] p-5 text-left transition hover:translate-y-[-2px] hover:shadow-[0_26px_46px_rgba(8,21,42,0.12)]"
     >
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -17,6 +17,15 @@ export default function SafetyHistoryCard({ item, onOpen }) {
         <SafetyVerdictBadge verdict={item.verdict} riskScore={item.risk_score} />
       </div>
       <p className="mt-4 text-sm leading-6 text-slate-600">{truncate(item.summary, 140)}</p>
+      {(item.tactics || item.metadata?.tactics)?.length ? (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {(item.tactics || item.metadata?.tactics || []).slice(0, 3).map((tactic) => (
+            <span key={tactic.label} className="rounded-full bg-slate-950 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white">
+              {tactic.label}
+            </span>
+          ))}
+        </div>
+      ) : null}
     </button>
   );
 }
