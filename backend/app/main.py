@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from contextlib import asynccontextmanager
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -10,21 +8,15 @@ from app.controllers.auth_controller import router as auth_router
 from app.controllers.dashboard_controller import router as dashboard_router
 from app.controllers.health_controller import router as health_router
 from app.controllers.report_controller import router as report_router
+from app.controllers.safety_controller import router as safety_router
 from app.core.config import get_settings
-from app.core.database import init_db
-from app.models import analysis, audit_log, incident_report, knowledge_chunk, retrieved_chunk, triggered_rule, user  # noqa: F401
+from app.models import analysis, audit_log, incident_report, knowledge_chunk, retrieved_chunk, safety_scan, triggered_rule, user  # noqa: F401
 
 
 settings = get_settings()
 
 
-@asynccontextmanager
-async def lifespan(_: FastAPI):
-    init_db()
-    yield
-
-
-app = FastAPI(title=settings.app_name, lifespan=lifespan)
+app = FastAPI(title=settings.app_name)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
@@ -37,3 +29,4 @@ app.include_router(auth_router)
 app.include_router(analysis_router)
 app.include_router(report_router)
 app.include_router(dashboard_router)
+app.include_router(safety_router)

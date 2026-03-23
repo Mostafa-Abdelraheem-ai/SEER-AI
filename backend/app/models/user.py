@@ -21,3 +21,4 @@ class User(Base):
 
     analyses = relationship("Analysis", back_populates="user", cascade="all, delete-orphan")
     audit_logs = relationship("AuditLog", back_populates="user", cascade="all, delete-orphan")
+    safety_scans = relationship("SafetyScan", back_populates="user", cascade="all, delete-orphan")

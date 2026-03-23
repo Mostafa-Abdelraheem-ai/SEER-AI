@@ -23,3 +23,5 @@ matplotlib
 joblib
 httpx
 openai
+Pillow
+pytesseract

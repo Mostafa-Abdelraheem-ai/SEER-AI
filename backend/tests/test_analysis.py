@@ -16,3 +16,7 @@ def test_analysis_endpoint(client) -> None:
     )
     assert response.status_code == 200
     assert "risk_score" in response.json()
+    history = api.get("/api/analysis/history", headers={"Authorization": f"Bearer {token}"})
+    assert history.status_code == 200
+    assert len(history.json()["items"]) == 1
+    assert history.json()["items"][0]["retrieved_chunks"]

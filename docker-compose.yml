@@ -1,6 +1,7 @@
 services:
   db:
     image: pgvector/pgvector:pg16
+    restart: unless-stopped
     environment:
       POSTGRES_DB: seer_ai_pp
       POSTGRES_USER: seer
@@ -19,14 +20,33 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
+    restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
-    env_file:
-      - backend/.env.example
     environment:
+      APP_NAME: SEER-AI++ Backend
+      ENVIRONMENT: development
+      SECRET_KEY: change-me
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 1440
       DATABASE_URL: postgresql+psycopg://seer:seer@db:5432/seer_ai_pp
+      CORS_ORIGINS: '["http://localhost:5173","http://127.0.0.1:5173"]'
+      UPLOADS_DIR: /app/uploads
+      REPORTS_DIR: /app/outputs/reports
+      SEER_EMBEDDING_DIMENSION: 384
       PYTHONPATH: /app/backend:/app
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
     ports:
       - "8000:8000"
     volumes:
@@ -37,10 +57,10 @@ services:
       context: .
       dockerfile: frontend/Dockerfile
       target: dev
+    restart: unless-stopped
     depends_on:
-      - backend
-    env_file:
-      - frontend/.env.example
+      backend:
+        condition: service_healthy
     environment:
       VITE_API_BASE_URL: http://localhost:8000
     ports:

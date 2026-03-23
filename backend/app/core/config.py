@@ -11,6 +11,13 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 ROOT_DIR = Path(__file__).resolve().parents[3]
 
 
+def _resolve_path(path_value: str, default: Path) -> str:
+    path = Path(path_value)
+    if path.is_absolute():
+        return str(path)
+    return str((ROOT_DIR / path) if path_value else default)
+
+
 class Settings(BaseSettings):
     app_name: str = "SEER-AI++ Backend"
     environment: str = "development"
@@ -22,6 +29,9 @@ class Settings(BaseSettings):
     cors_origins: List[str] = Field(default_factory=lambda: ["http://localhost:5173"])
     uploads_dir: str = str(ROOT_DIR / "uploads")
     reports_dir: str = str(ROOT_DIR / "outputs" / "reports")
+    webhook_secret: str = "change-me-webhook-secret"
+    audio_transcription_model: str = "whisper-1"
+    openai_api_key: str | None = None
     model_config = SettingsConfigDict(
         env_file=str(ROOT_DIR / "backend" / ".env"),
         env_file_encoding="utf-8",
@@ -32,6 +42,8 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     settings = Settings()
+    settings.uploads_dir = _resolve_path(settings.uploads_dir, ROOT_DIR / "uploads")
+    settings.reports_dir = _resolve_path(settings.reports_dir, ROOT_DIR / "outputs" / "reports")
     Path(settings.uploads_dir).mkdir(parents=True, exist_ok=True)
     Path(settings.reports_dir).mkdir(parents=True, exist_ok=True)
     return settings

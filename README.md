@@ -1,6 +1,6 @@
 # SEER-AI++
 
-SEER-AI++ is a full-stack cybersecurity platform for detecting and investigating social-engineering scams across email, SMS, and chat. It combines classical NLP models, a hybrid risk engine, psychological tactic detection, PostgreSQL + pgvector retrieval, SOC-style reporting, a FastAPI backend, and a React dashboard.
+SEER-AI++ is a full-stack digital safety assistant for everyday users. It helps people check suspicious messages, emails, links, attachments, voice notes, and images before they click, reply, share, or upload. Internally it still uses the existing FastAPI, PostgreSQL, pgvector, and AI pipeline architecture, but the product experience is now focused on simple guidance and plain-English explanations.
 
 ## Overview
 
@@ -13,17 +13,27 @@ The project started as an AI prototype for scam detection and was refactored int
 - Deployment: Docker Compose for local use and single-host EC2 deployment
 - AI core: preserved in `src/`
 
-The platform accepts suspicious text, classifies likely attack type and persuasion tactic, computes a hybrid risk score, retrieves supporting knowledge-base evidence, and generates an analyst-style incident response summary.
+The platform can now help answer questions like:
+
+- Is this message a scam?
+- Is this link safe enough to open?
+- Does this attachment look suspicious?
+- Does this voice message sound manipulative or urgent?
+- Could this image expose private information if I share it?
 
 ## Core Features
 
 - User registration, login, and protected API access
-- Message analysis for phishing, impersonation, financial fraud, credential harvesting, and related categories
-- Psychological tactic detection such as urgency, authority, fear, secrecy, and reward
+- Message safety checks for scam, impersonation, pressure, urgency, and manipulation signals
+- Email parsing for pasted emails and `.eml` uploads, including sender, reply-to, subject, links, and attachment metadata
+- Link checks with local heuristic explanations and honest limitations
+- File hash checks with format recognition and clear wording when no threat database is configured
+- Voice-note checks with optional transcription and transcript-based scam analysis
+- Image privacy checks using OCR plus sensitive-information pattern matching
 - Hybrid risk scoring from model confidence, rules, and RAG evidence
-- PostgreSQL persistence for users, analyses, triggered rules, retrieved chunks, reports, audit logs, and KB vectors
+- PostgreSQL persistence for users, analyses, safety checks, triggered rules, retrieved chunks, reports, audit logs, and KB vectors
 - Knowledge-base retrieval using pgvector similarity search
-- React investigation dashboard for history, details, and reports
+- React dashboard for consumer-friendly safety checks, history, and reports
 - Dockerized local and EC2-ready deployment paths
 
 ## Architecture
@@ -44,16 +54,18 @@ flowchart LR
 
 ## High-Level Flow
 
-1. A user submits a suspicious message through the frontend or API.
-2. The backend calls the AI inference pipeline in `backend/app/ai/inference_pipeline.py`.
+1. A user submits a message, email, voice note, link, attachment, hash, or image through the frontend or API.
+2. The backend routes the request into a feature-specific safety service.
+3. Message-like content is passed into the AI inference pipeline in `backend/app/ai/inference_pipeline.py`.
 3. The risk engine in `src/risk_engine.py` performs:
    - attack prediction
    - tactic prediction
    - rule-based scoring
    - RAG retrieval from PostgreSQL + pgvector
-4. Explainability and agent modules generate plain-English reasoning and an incident report.
-5. The backend stores the analysis, retrieved chunks, triggered rules, and report in PostgreSQL.
-6. The frontend renders the result and preserves it in user history.
+4. Feature helpers add URL, attachment, hash, transcription, or OCR-specific checks when relevant.
+5. Explainability and agent modules generate plain-English reasoning and advice.
+6. The backend stores the result in PostgreSQL for history and follow-up reports.
+7. The frontend renders a simple result like `Safe`, `Caution`, `Risky`, or `Private info detected`.
 
 ## Repository Structure
 
@@ -150,6 +162,20 @@ Health:
 
 - `GET /health`
 
+Safety checks:
+
+- `POST /api/safety/message`
+- `POST /api/safety/voice`
+- `POST /api/safety/email`
+- `POST /api/safety/email-upload`
+- `POST /api/safety/attachment`
+- `POST /api/safety/link`
+- `POST /api/safety/hash`
+- `POST /api/safety/image-privacy`
+- `GET /api/safety/history`
+- `GET /api/safety/{id}`
+- `POST /api/safety/webhook`
+
 ## Local Development
 
 ### Backend
@@ -180,30 +206,135 @@ Local URLs:
 - Frontend: `http://localhost:5173`
 - Backend: `http://localhost:8000`
 - Health: `http://localhost:8000/health`
+- Docs: `http://localhost:8000/docs`
 
-## Docker Development
+## Local Docker Quick Start
 
-The development Docker stack keeps frontend, backend, and PostgreSQL separate and exposed:
+The local Docker stack runs PostgreSQL with pgvector, the FastAPI backend, and the Vite frontend.
+
+Required env files:
+
+- None for the default Docker flow.
+- Optional: copy `backend/.env.example` to `backend/.env` and `frontend/.env.example` to `frontend/.env` if you also want host-native runs outside Docker.
+
+Optional feature configuration:
+
+- `WEBHOOK_SECRET`
+  Use this if you want to accept external safety-check webhooks.
+- `OPENAI_API_KEY`
+  Optional. If provided, voice-note transcription can use the configured audio transcription model.
+- `AUDIO_TRANSCRIPTION_MODEL`
+  Defaults to `whisper-1`.
+
+OCR support:
+
+- Docker already installs `tesseract-ocr` for backend containers.
+- For host-native backend runs, install Tesseract locally if you want OCR-based image privacy checks outside Docker.
+
+Start the stack:
 
 ```bash
 cd seer_ai_pp
 docker compose up --build
 ```
 
-Then initialize or rebuild the KB vectors:
-
-```bash
-docker compose exec backend alembic -c backend/alembic.ini upgrade head
-docker compose exec backend python -m src.rag.build_index
-```
-
-Development services:
+Expected local URLs:
 
 - Frontend: `http://localhost:5173`
 - Backend: `http://localhost:8000`
-- PostgreSQL: `localhost:5432`
+- Docs: `http://localhost:8000/docs`
+- Health: `http://localhost:8000/health`
 
-The DB image is `pgvector/pgvector:pg16`.
+Consumer-facing safety tools in the app:
+
+- `Message Check`
+- `Voice Check`
+- `Link Check`
+- `Image Privacy Check`
+- `History`
+
+Webhook usage:
+
+- Endpoint: `POST /api/safety/webhook`
+- Header: `X-SEER-Webhook-Secret: <your secret>`
+- Supported payload fields:
+  - `message`
+  - `email_text`
+  - `url`
+
+Important limitations:
+
+- Attachment checks are metadata-based only. They do not run full malware sandboxing.
+- Link checks use local heuristics and do not guarantee a link is safe.
+- Hash checks validate the hash format and can explain limits, but they do not query a live threat database by default.
+- Image privacy checks rely on OCR and pattern matching, so they may miss text or flag partial matches.
+- Voice-note analysis is strongest when transcription is available. Without a transcript or optional transcription provider, the result will explain that limitation.
+
+## Clean Local Reset
+
+Use the helper scripts when you want a reproducible local cleanup before rebuilding the stack.
+
+Soft cleanup:
+
+- `./scripts/clean_local.sh`
+- removes repo-local Python caches, pytest cache, frontend `dist`, frontend `node_modules`, and local SQLite test DBs
+- keeps Docker volumes and PostgreSQL data
+
+Soft Docker reset:
+
+- `./scripts/docker_reset.sh`
+- equivalent to `docker compose down --remove-orphans`
+- removes only this project's containers and network
+- preserves `postgres_data` and `frontend_node_modules`
+
+Full Docker reset:
+
+- `./scripts/docker_reset_full.sh`
+- equivalent to `docker compose down --remove-orphans -v`
+- removes this project's containers, network, and named volumes
+- deletes PostgreSQL data in `postgres_data`
+- deletes the Docker-managed `frontend_node_modules` volume
+
+Fresh Docker start:
+
+```bash
+./scripts/clean_local.sh
+./scripts/docker_reset.sh
+docker compose up --build
+```
+
+If you want a true from-scratch database boot, replace `./scripts/docker_reset.sh` with `./scripts/docker_reset_full.sh`.
+
+What happens on backend startup:
+
+- waits for PostgreSQL to become reachable
+- runs `alembic upgrade head`
+- creates the pgvector extension through the migration flow
+- builds the knowledge-base index if `knowledge_chunks` is empty
+
+Local URLs:
+
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:8000`
+- Backend docs: `http://localhost:8000/docs`
+- Health: `http://localhost:8000/health`
+
+Useful commands:
+
+```bash
+./scripts/clean_local.sh
+./scripts/docker_reset.sh
+./scripts/docker_reset_full.sh
+docker compose logs -f
+docker compose logs -f backend
+docker compose exec backend alembic -c backend/alembic.ini upgrade head
+docker compose exec backend python -m src.rag.build_index
+docker compose down
+docker compose down -v
+docker compose up --build
+```
+
+The DB image is `pgvector/pgvector:pg16`, and PostgreSQL data is persisted in the `postgres_data` volume.
 
 ## Production Deployment on EC2
 

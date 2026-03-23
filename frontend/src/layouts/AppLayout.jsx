@@ -2,9 +2,11 @@ import Navbar from "../components/Navbar";
 
 export default function AppLayout({ children }) {
   return (
-    <div className="flex min-h-screen bg-slate-100">
+    <div className="min-h-screen md:flex">
       <Navbar />
-      <main className="flex-1 px-8 py-8">{children}</main>
+      <main className="flex-1 px-4 py-4 md:px-8 md:py-8">
+        <div className="mx-auto max-w-7xl animate-fade-up">{children}</div>
+      </main>
     </div>
   );
 }

@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 
 import pytest
+
 os.environ["DATABASE_URL"] = "sqlite:///./backend_test.db"
 
 from fastapi.testclient import TestClient
@@ -10,7 +11,7 @@ from fastapi.testclient import TestClient
 from app.ai.inference_pipeline import InferencePipeline
 from app.core.database import Base, engine
 from app.main import app
-from app.models import analysis, audit_log, incident_report, knowledge_chunk, retrieved_chunk, triggered_rule, user  # noqa: F401
+from app.models import analysis, audit_log, incident_report, knowledge_chunk, retrieved_chunk, safety_scan, triggered_rule, user  # noqa: F401
 
 
 Base.metadata.drop_all(bind=engine)
