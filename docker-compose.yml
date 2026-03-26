@@ -23,7 +23,8 @@ services:
       args:
         INSTALL_AI_EXTRAS: ${INSTALL_AI_EXTRAS:-false}
     env_file:
-      - backend/.env
+      - path: backend/.env
+        required: false
     restart: unless-stopped
     depends_on:
       db:
@@ -103,7 +104,8 @@ services:
       dockerfile: frontend/Dockerfile
       target: dev
     env_file:
-      - frontend/.env
+      - path: frontend/.env
+        required: false
     restart: unless-stopped
     depends_on:
       backend:
