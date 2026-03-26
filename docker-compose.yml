@@ -20,6 +20,10 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
+      args:
+        INSTALL_AI_EXTRAS: ${INSTALL_AI_EXTRAS:-false}
+    env_file:
+      - backend/.env
     restart: unless-stopped
     depends_on:
       db:
@@ -36,13 +40,18 @@ services:
       REPORTS_DIR: /app/outputs/reports
       SEER_EMBEDDING_DIMENSION: 384
       OPENAI_GENERATION_MODEL: gpt-4o-mini
-      METRICS_ENABLED: "true"
+      METRICS_ENABLED: ${ENABLE_MONITORING:-false}
       LOG_LEVEL: INFO
       TEXT_MODEL_PROVIDER: hybrid
       RAG_GENERATION_PROVIDER: openai
       OCR_PROVIDER: tesseract
       VOICE_ACOUSTIC_PROVIDER: signal
       PYTHONPATH: /app/backend:/app
+      INSTALL_AI_EXTRAS: ${INSTALL_AI_EXTRAS:-false}
+      ENABLE_RAG: ${ENABLE_RAG:-false}
+      ENABLE_OCR: ${ENABLE_OCR:-false}
+      ENABLE_MONITORING: ${ENABLE_MONITORING:-false}
+      ENABLE_HEAVY_MODELS: ${ENABLE_HEAVY_MODELS:-false}
     healthcheck:
       test:
         [
@@ -61,6 +70,7 @@ services:
 
   prometheus:
     image: prom/prometheus:v2.54.1
+    profiles: ["monitoring"]
     restart: unless-stopped
     depends_on:
       backend:
@@ -74,6 +84,7 @@ services:
 
   grafana:
     image: grafana/grafana:11.2.0
+    profiles: ["monitoring"]
     restart: unless-stopped
     depends_on:
       - prometheus
@@ -91,6 +102,8 @@ services:
       context: .
       dockerfile: frontend/Dockerfile
       target: dev
+    env_file:
+      - frontend/.env
     restart: unless-stopped
     depends_on:
       backend:

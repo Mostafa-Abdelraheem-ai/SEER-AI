@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from app.core.config import get_settings
 from src.rag.retriever import LocalRetriever
 
 from app.ai.providers.openai_provider import OpenAIProvider
@@ -9,10 +10,20 @@ from app.observability.metrics import record_pipeline_event, record_retrieval_sc
 
 class EnhancedRAGService:
     def __init__(self) -> None:
-        self.retriever = LocalRetriever()
+        self.settings = get_settings()
+        self.retriever = LocalRetriever() if self.settings.enable_rag else None
         self.openai = OpenAIProvider()
 
     def explain(self, query: str, top_k: int = 4) -> RetrievalResult:
+        if not self.settings.enable_rag or self.retriever is None:
+            return RetrievalResult(
+                citations=[],
+                synthesized_explanation="Knowledge retrieval is disabled in lightweight mode.",
+                provider="disabled",
+                fallback_used=False,
+                top_score=None,
+            )
+
         with track_duration("retrieval", "pgvector"):
             result = self.retriever.retrieve(query, top_k=top_k)
         citations = [

@@ -6,14 +6,19 @@ from typing import Dict, List, Optional
 import numpy as np
 from sqlalchemy import text
 
-from src.config import INDEX_DIR
+from src.config import ENABLE_RAG, INDEX_DIR
 from src.rag.build_index import Embedder, build_index
 from src.rag.store import ensure_schema, fetch_all_chunks, get_engine
 
 
 class LocalRetriever:
     def __init__(self, index_dir: Optional[Path] = None, database_url: Optional[str] = None) -> None:
+        self.enabled = ENABLE_RAG
         self.index_dir = INDEX_DIR if index_dir is None else index_dir
+        self.engine = None
+        self.embedder = None
+        if not self.enabled:
+            return
         self.engine = get_engine(database_url)
         ensure_schema(self.engine)
         if not fetch_all_chunks(self.engine):
@@ -31,6 +36,12 @@ class LocalRetriever:
         return float(np.dot(lhs_array, rhs_array) / (lhs_norm * rhs_norm))
 
     def retrieve(self, query: str, top_k: int = 3) -> Dict[str, object]:
+        if not self.enabled or self.engine is None or self.embedder is None:
+            return {
+                "retrieved_chunks": [],
+                "relevance_scores": [],
+                "synthesized_explanation": "",
+            }
         query_embedding = self.embedder.encode([query]).astype("float32")[0].tolist()
         retrieved = []
         if self.engine.dialect.name == "postgresql":

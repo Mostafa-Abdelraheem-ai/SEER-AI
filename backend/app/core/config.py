@@ -39,6 +39,10 @@ class Settings(BaseSettings):
     rag_generation_provider: str = "openai"
     ocr_provider: str = "tesseract"
     voice_acoustic_provider: str = "signal"
+    enable_rag: bool = True
+    enable_ocr: bool = True
+    enable_monitoring: bool = True
+    enable_heavy_models: bool = False
     model_config = SettingsConfigDict(
         env_file=str(ROOT_DIR / "backend" / ".env"),
         env_file_encoding="utf-8",
@@ -49,6 +53,7 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     settings = Settings()
+    settings.metrics_enabled = settings.metrics_enabled and settings.enable_monitoring
     settings.uploads_dir = _resolve_path(settings.uploads_dir, ROOT_DIR / "uploads")
     settings.reports_dir = _resolve_path(settings.reports_dir, ROOT_DIR / "outputs" / "reports")
     Path(settings.uploads_dir).mkdir(parents=True, exist_ok=True)

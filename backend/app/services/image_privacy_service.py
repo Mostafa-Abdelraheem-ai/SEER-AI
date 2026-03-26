@@ -5,6 +5,8 @@ from io import BytesIO
 
 from PIL import Image, ImageFilter, ImageOps
 
+from app.core.config import get_settings
+
 try:
     import pytesseract
 except Exception:  # pragma: no cover
@@ -22,6 +24,9 @@ SENSITIVE_PATTERNS = {
 
 
 class ImagePrivacyService:
+    def __init__(self) -> None:
+        self.settings = get_settings()
+
     @staticmethod
     def _preprocess(image: Image.Image) -> list[tuple[str, Image.Image]]:
         rgb = image.convert("RGB")
@@ -38,6 +43,18 @@ class ImagePrivacyService:
         ]
 
     def inspect(self, image_bytes: bytes, filename: str) -> dict:
+        if not self.settings.enable_ocr:
+            return {
+                "extracted_text": "",
+                "findings": [],
+                "score": 15,
+                "verdict": "caution",
+                "limitations": [
+                    "OCR is disabled in lightweight mode.",
+                    "Enable ENABLE_OCR=true if you want image text scanning.",
+                ],
+                "metadata": {"filename": filename, "ocr_disabled": True},
+            }
         if pytesseract is None:
             return {
                 "extracted_text": "",

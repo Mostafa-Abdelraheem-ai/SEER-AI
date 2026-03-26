@@ -4,6 +4,12 @@ import os
 from pathlib import Path
 
 
+def _as_bool(value: str | None, default: bool) -> bool:
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = PROJECT_ROOT / "data"
 RAW_DATA_DIR = DATA_DIR / "raw"
@@ -52,6 +58,10 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 USE_OPENAI = bool(OPENAI_API_KEY)
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+psycopg://seer:seer@localhost:5432/seer_ai_pp")
 EMBEDDING_DIMENSION = int(os.getenv("SEER_EMBEDDING_DIMENSION", "384"))
+ENABLE_RAG = _as_bool(os.getenv("ENABLE_RAG"), True)
+ENABLE_OCR = _as_bool(os.getenv("ENABLE_OCR"), True)
+ENABLE_MONITORING = _as_bool(os.getenv("ENABLE_MONITORING"), True)
+ENABLE_HEAVY_MODELS = _as_bool(os.getenv("ENABLE_HEAVY_MODELS"), False)
 
 MAX_CHUNK_SIZE = 450
 CHUNK_OVERLAP = 60
