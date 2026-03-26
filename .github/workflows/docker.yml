@@ -9,6 +9,7 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     steps:
+      # Keep this workflow minimal: validate compose files and confirm both app images build.
       - uses: actions/checkout@v5
       - name: Prepare production env templates
         run: |
