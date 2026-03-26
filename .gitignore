@@ -43,5 +43,8 @@ frontend/dist/
 
 # Docker
 *.sqlite
+seer_ai_local.db
+runtime_app.db
+alembic_smoke.db
 backend_test.db
 backups/

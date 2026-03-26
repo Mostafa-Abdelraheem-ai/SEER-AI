@@ -8,7 +8,7 @@ from typing import List, Optional
 import numpy as np
 from sklearn.feature_extraction.text import HashingVectorizer
 
-from src.config import EMBEDDING_DIMENSION, INDEX_DIR, SENTENCE_MODEL_NAME
+from src.config import EMBEDDING_DIMENSION, ENABLE_HEAVY_MODELS, ENABLE_RAG, INDEX_DIR, SENTENCE_MODEL_NAME
 from src.rag.kb_loader import load_kb_chunks
 from src.rag.store import ensure_schema, get_engine, insert_chunks, reset_chunks
 
@@ -31,7 +31,7 @@ class Embedder:
         self.backend = "hashing"
         self.vectorizer = HashingVectorizer(n_features=EMBEDDING_DIMENSION, alternate_sign=False, norm="l2")
         self.model = None
-        if SENTENCE_TRANSFORMERS_AVAILABLE:
+        if ENABLE_HEAVY_MODELS and SENTENCE_TRANSFORMERS_AVAILABLE:
             try:
                 self.model = SentenceTransformer(SENTENCE_MODEL_NAME, local_files_only=True)
                 self.backend = "sentence_transformer"
@@ -48,6 +48,10 @@ class Embedder:
 def build_index(output_dir: Optional[Path] = None, database_url: Optional[str] = None) -> Path:
     output = INDEX_DIR if output_dir is None else output_dir
     output.mkdir(parents=True, exist_ok=True)
+    if not ENABLE_RAG:
+        with (output / "metadata.pkl").open("wb") as handle:
+            pickle.dump({"chunks_indexed": 0, "backend": "disabled"}, handle)
+        return output
     chunks = load_kb_chunks()
     embedder = Embedder()
     embeddings = embedder.encode([chunk.text for chunk in chunks]).astype("float32")

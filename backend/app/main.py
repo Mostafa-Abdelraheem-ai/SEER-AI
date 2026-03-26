@@ -35,5 +35,5 @@ app.include_router(analysis_router)
 app.include_router(report_router)
 app.include_router(dashboard_router)
 app.include_router(safety_router)
-if settings.metrics_enabled:
+if settings.metrics_enabled and settings.enable_monitoring:
     app.include_router(observability_router)

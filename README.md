@@ -197,6 +197,55 @@ python -m src.rag.build_index
 uvicorn app.main:app --app-dir backend --reload
 ```
 
+### Lightweight Local Backend
+
+For a normal development machine, the fastest non-Docker path is the lightweight backend mode:
+
+```bash
+cd seer_ai_pp
+python3 -m venv .venv-local
+.venv-local/bin/pip install -r backend/requirements-local.txt
+cp backend/.env.local.example backend/.env
+./scripts/run_backend.sh
+```
+
+This mode uses:
+
+- SQLite instead of PostgreSQL
+- `ENABLE_RAG=false`
+- `ENABLE_OCR=false`
+- `ENABLE_MONITORING=false`
+- `ENABLE_HEAVY_MODELS=false`
+
+The backend still boots and supports the app flow, but optional heavyweight features are degraded gracefully instead of blocking startup.
+
+### Full Local Backend
+
+If you want the intended full local backend path with PostgreSQL, pgvector, OCR, and monitoring enabled:
+
+```bash
+cd seer_ai_pp
+cp backend/.env.example backend/.env
+.venv310/bin/pip install -r backend/requirements.txt
+./scripts/init_local_postgres.sh
+./scripts/run_backend_full.sh
+```
+
+Prerequisites for this full local path:
+
+- PostgreSQL running locally
+- `pgvector` extension available in that PostgreSQL instance
+- Tesseract OCR installed on the host
+- optional OpenAI API key if you want OpenAI-backed generation/transcription
+
+Suggested macOS/Homebrew setup if PostgreSQL is not installed yet:
+
+```bash
+brew install postgresql@16 pgvector
+brew services start postgresql@16
+export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"
+```
+
 ### Frontend
 
 ```bash
@@ -234,6 +283,8 @@ Optional feature configuration:
   Defaults to `gpt-4o-mini`.
 - `METRICS_ENABLED`
   Enables the `/metrics` endpoint for Prometheus scraping.
+- `INSTALL_AI_EXTRAS`
+  Defaults to `false` for faster local Docker builds. Set it to `true` only when you want the backend image to install heavyweight local-model packages like `torch`, `transformers`, and `sentence-transformers`.
 
 OCR support:
 
@@ -245,6 +296,55 @@ Start the stack:
 ```bash
 cd seer_ai_pp
 docker compose up --build
+```
+
+Faster default local build behavior:
+
+- Docker now installs the backend core runtime by default.
+- Heavy local-model packages are optional so everyday local startup does not block on downloading the full transformer stack.
+- If you want the heavier local-model path in Docker, run:
+
+```bash
+cd seer_ai_pp
+INSTALL_AI_EXTRAS=true docker compose up --build
+```
+
+Dependency layout:
+
+- `backend/requirements-core.txt`
+  Core backend runtime and services used for normal local Docker runs.
+- `backend/requirements-ai.txt`
+  Optional heavyweight local-model extras used only when `INSTALL_AI_EXTRAS=true`.
+- `backend/requirements.txt`
+  Convenience aggregate for host-native installs that still want the full stack.
+
+Lightweight Compose defaults:
+
+- The default Compose backend now uses:
+  - `ENABLE_RAG=false`
+  - `ENABLE_OCR=false`
+  - `ENABLE_MONITORING=false`
+  - `ENABLE_HEAVY_MODELS=false`
+- Prometheus and Grafana are now behind the optional `monitoring` profile.
+- For the lightest useful laptop-friendly stack, run:
+
+```bash
+cd seer_ai_pp
+docker compose up --build
+```
+
+- If you want monitoring too, run:
+
+```bash
+cd seer_ai_pp
+ENABLE_MONITORING=true docker compose --profile monitoring up --build
+```
+
+- If you also want the heavyweight local-model extras in Docker, run:
+
+```bash
+cd seer_ai_pp
+ENABLE_MONITORING=true ENABLE_RAG=true ENABLE_OCR=true ENABLE_HEAVY_MODELS=true INSTALL_AI_EXTRAS=true docker compose --profile monitoring up --build
 ```
 
 Expected local URLs:

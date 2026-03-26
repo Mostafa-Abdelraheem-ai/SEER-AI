@@ -2,8 +2,18 @@ import axios from "axios";
 
 import { trackApiError, trackApiMetric } from "../services/telemetry";
 
+function resolveApiBaseUrl() {
+  const configured = import.meta.env.VITE_API_BASE_URL;
+  if (configured) return configured;
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname || "127.0.0.1";
+    return `http://${host}:8000`;
+  }
+  return "http://127.0.0.1:8000";
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "",
+  baseURL: resolveApiBaseUrl(),
 });
 
 api.interceptors.request.use((config) => {

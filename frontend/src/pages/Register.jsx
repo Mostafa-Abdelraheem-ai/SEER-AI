@@ -11,6 +11,17 @@ export default function Register() {
   const [form, setForm] = useState({ full_name: "", email: "", password: "" });
   const [message, setMessage] = useState("");
 
+  const formatError = (error) => {
+    const detail = error?.response?.data?.detail;
+    if (detail === "Email already exists") {
+      return "This email is already registered. Try logging in instead.";
+    }
+    if (typeof detail === "string" && detail.trim()) {
+      return detail;
+    }
+    return "Registration failed";
+  };
+
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10 md:px-8">
       <div className="absolute left-[10%] top-10 h-40 w-40 rounded-full bg-cyan-300/25 blur-3xl" />
@@ -35,7 +46,7 @@ export default function Register() {
                   await register(form);
                   navigate("/login");
                 } catch (err) {
-                  setMessage(err.response?.data?.detail || "Registration failed");
+                  setMessage(formatError(err));
                 }
               }}
             >
