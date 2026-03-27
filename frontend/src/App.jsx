@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import ImagePrivacyCheck from "./pages/ImagePrivacyCheck";
 import LinkCheck from "./pages/LinkCheck";
 import Login from "./pages/Login";
+import MessageCheck from "./pages/MessageCheck";
 import NewAnalysis from "./pages/NewAnalysis";
 import Profile from "./pages/Profile";
 import Register from "./pages/Register";
@@ -29,7 +30,8 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/dashboard" element={<AppShell><Dashboard /></AppShell>} />
-      <Route path="/message-check" element={<AppShell><NewAnalysis /></AppShell>} />
+      <Route path="/assistant" element={<AppShell><NewAnalysis /></AppShell>} />
+      <Route path="/message-check" element={<AppShell><MessageCheck /></AppShell>} />
       <Route path="/voice-check" element={<AppShell><VoiceCheck /></AppShell>} />
       <Route path="/link-check" element={<AppShell><LinkCheck /></AppShell>} />
       <Route path="/image-privacy" element={<AppShell><ImagePrivacyCheck /></AppShell>} />

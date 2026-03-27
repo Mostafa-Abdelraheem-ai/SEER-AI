@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import api from "../api/client";
 import ReportCard from "../components/ReportCard";
 
 export default function Reports() {
   const [reports, setReports] = useState([]);
+  const { t } = useTranslation();
 
   useEffect(() => {
     api.get("/api/analysis/history").then((response) => {
@@ -21,10 +23,10 @@ export default function Reports() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.32em] text-cyan-700">Incident library</p>
-        <h1 className="mt-3 text-4xl font-black tracking-[-0.04em] text-[color:var(--seer-text)]">Reports</h1>
-        <p className="mt-3 text-sm leading-7 text-[color:var(--seer-text-soft)]">AI-generated narratives and summaries that can be reviewed, copied, and handed off when you need a stronger written record.</p>
+      <div className="space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.32em] text-cyan-700">{t("reportsPage.eyebrow")}</p>
+        <h1 className="text-3xl font-black tracking-[-0.04em] text-[color:var(--seer-text)] sm:text-4xl">{t("reportsPage.title")}</h1>
+        <p className="max-w-3xl text-sm leading-7 text-[color:var(--seer-text-soft)]">{t("reportsPage.subtitle")}</p>
       </div>
       {reports.length ? (
         <div className="grid gap-4 md:grid-cols-2">
@@ -34,8 +36,8 @@ export default function Reports() {
         </div>
       ) : (
         <div className="panel-surface rounded-[30px] px-6 py-10 text-center">
-          <h2 className="text-xl font-semibold text-[color:var(--seer-text)]">No reports available yet</h2>
-          <p className="mt-3 text-sm leading-6 text-[color:var(--seer-text-soft)]">Generate a report from any analysis detail page and it will appear here.</p>
+          <h2 className="text-xl font-semibold text-[color:var(--seer-text)]">{t("reportsPage.emptyTitle")}</h2>
+          <p className="mt-3 text-sm leading-6 text-[color:var(--seer-text-soft)]">{t("reportsPage.emptySubtitle")}</p>
         </div>
       )}
     </div>

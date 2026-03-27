@@ -1,8 +1,11 @@
+import { useTranslation } from "react-i18next";
+
 export default function ResultTabs({ value, onChange }) {
+  const { t } = useTranslation();
   const tabs = [
-    { id: "overview", label: "Overview" },
-    { id: "details", label: "Technical details" },
-    { id: "raw", label: "Raw data" },
+    { id: "overview", label: t("tabs.overview") },
+    { id: "details", label: t("tabs.details") },
+    { id: "raw", label: t("tabs.raw") },
   ];
 
   return (

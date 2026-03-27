@@ -11,7 +11,7 @@ export default function StatsCard({ title, value, subtitle, accent = "cyan" }) {
       <div className={`inline-flex rounded-full bg-gradient-to-r px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] ${accentClasses}`}>
         {title}
       </div>
-      <div className="mt-5 text-4xl font-black tracking-[-0.04em] text-[color:var(--seer-text)]">{value}</div>
+      <div className="mt-5 break-words text-3xl font-black tracking-[-0.04em] text-[color:var(--seer-text)] sm:text-4xl">{value}</div>
       <p className="mt-2 text-sm leading-6 text-[color:var(--seer-text-soft)]">{subtitle}</p>
     </div>
   );
