@@ -1,13 +1,13 @@
 import api from "../api/client";
 
 export const INPUT_TYPES = [
-  { id: "message", label: "Message", acceptsFile: false, accept: "" },
-  { id: "email", label: "Email", acceptsFile: true, accept: ".eml,message/rfc822" },
-  { id: "link", label: "Link", acceptsFile: false, accept: "" },
-  { id: "image", label: "Image", acceptsFile: true, accept: "image/*" },
-  { id: "voice", label: "Voice", acceptsFile: true, accept: "audio/*,.wav" },
-  { id: "attachment", label: "Attachment", acceptsFile: true, accept: "*" },
-  { id: "hash", label: "Hash", acceptsFile: false, accept: "" },
+  { id: "message", labelKey: "common.messageCheck", acceptsFile: false, accept: "" },
+  { id: "email", labelKey: "scanTypes.email", acceptsFile: true, accept: ".eml,message/rfc822" },
+  { id: "link", labelKey: "common.linkCheck", acceptsFile: false, accept: "" },
+  { id: "image", labelKey: "common.imagePrivacy", acceptsFile: true, accept: "image/*" },
+  { id: "voice", labelKey: "common.voiceCheck", acceptsFile: true, accept: "audio/*,.wav" },
+  { id: "attachment", labelKey: "scanTypes.attachment", acceptsFile: true, accept: "*" },
+  { id: "hash", labelKey: "scanTypes.hash", acceptsFile: false, accept: "" },
 ];
 
 export function detectInputType({ text, file }) {

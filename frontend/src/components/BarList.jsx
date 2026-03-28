@@ -2,16 +2,16 @@ export default function BarList({ title, subtitle, items, itemKey, valueKey, ton
   const max = Math.max(...items.map((item) => item[valueKey] || 0), 1);
   const toneClass =
     tone === "amber"
-      ? "from-amber-300 via-amber-400 to-orange-500"
+      ? "from-amber-300 via-amber-400 to-red-500"
       : tone === "emerald"
         ? "from-emerald-300 via-emerald-400 to-teal-500"
-        : "from-sky-300 via-cyan-400 to-blue-500";
+        : "from-cyan-300 via-cyan-400 to-indigo-500";
 
   return (
-    <div className="panel-surface rounded-[30px] p-6">
+    <div className="panel-surface interactive-surface rounded-[30px] p-5 sm:p-6">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-[color:var(--seer-text)]">{title}</h2>
+          <h2 className="text-base font-semibold text-[color:var(--seer-text)] sm:text-lg">{title}</h2>
           <p className="mt-1 text-sm text-[color:var(--seer-text-soft)]">{subtitle}</p>
         </div>
         <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-[color:var(--seer-text-soft)]">

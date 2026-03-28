@@ -1,6 +1,8 @@
-export default function SeerLogo({ className = "", compact = false, showWordmark = true }) {
-  return (
-    <div className={`flex items-center ${compact ? "gap-3" : "gap-4"} ${className}`}>
+import { Link } from "react-router-dom";
+
+export default function SeerLogo({ className = "", compact = false, showWordmark = true, to, ariaLabel = "Go to home" }) {
+  const content = (
+    <>
       <div className={`relative ${compact ? "h-11 w-11" : "h-16 w-16"} shrink-0`}>
         <svg viewBox="0 0 120 132" className="h-full w-full drop-shadow-[0_16px_40px_rgba(21,143,200,0.35)]" aria-hidden="true">
           <defs>
@@ -44,6 +46,20 @@ export default function SeerLogo({ className = "", compact = false, showWordmark
           {!compact ? <div className="text-xs uppercase tracking-[0.34em] text-cyan-300/80">Multimodal threat intelligence</div> : null}
         </div>
       ) : null}
-    </div>
+    </>
+  );
+
+  const classes = `seer-logo flex items-center ${compact ? "gap-3" : "gap-4"} ${to ? "app-logo-link" : ""} ${className}`;
+
+  if (to) {
+    return (
+      <Link to={to} aria-label={ariaLabel} className={classes}>
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <div className={classes}>{content}</div>
   );
 }

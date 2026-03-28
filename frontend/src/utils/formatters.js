@@ -1,3 +1,5 @@
+import i18n from "../i18n";
+
 export function truncate(text, max = 180) {
   if (!text) return "";
   return text.length > max ? `${text.slice(0, max)}...` : text;
@@ -5,18 +7,9 @@ export function truncate(text, max = 180) {
 
 export function formatDateTime(value) {
   if (!value) return "";
-  return new Date(value).toLocaleString();
+  return new Date(value).toLocaleString(i18n.language === "ar" ? "ar-EG" : "en-US");
 }
 
 export function scanTypeLabel(scanType) {
-  const labels = {
-    message: "Message check",
-    voice: "Voice check",
-    email: "Email check",
-    attachment: "Attachment check",
-    link: "Link check",
-    hash: "Hash check",
-    image_privacy: "Image privacy check",
-  };
-  return labels[scanType] || "Safety check";
+  return i18n.t(`scanTypes.${scanType}`, { defaultValue: i18n.t("scanTypes.default") });
 }

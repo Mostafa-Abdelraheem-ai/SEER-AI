@@ -1,8 +1,10 @@
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function DropzoneCard({ accept, label, hint, onFileSelect }) {
   const inputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
+  const { t } = useTranslation();
 
   const pickFile = (files) => {
     const file = files?.[0];
@@ -11,7 +13,7 @@ export default function DropzoneCard({ accept, label, hint, onFileSelect }) {
 
   return (
     <div
-      className={`rounded-[28px] border-2 border-dashed p-5 transition duration-200 ${
+      className={`rounded-[28px] border-2 border-dashed p-4 transition duration-200 sm:p-5 ${
         isDragging
           ? "border-cyan-300 bg-cyan-300/10 shadow-[0_20px_60px_rgba(41,191,255,0.14)]"
           : "border-white/10 bg-black/20"
@@ -41,10 +43,10 @@ export default function DropzoneCard({ accept, label, hint, onFileSelect }) {
         </div>
         <button
           type="button"
-          className="rounded-[18px] border border-white/10 bg-white/6 px-4 py-3 text-sm font-semibold text-[color:var(--seer-text)] transition hover:border-cyan-300/40 hover:bg-cyan-300/10"
+          className="app-secondary-button w-full md:w-auto"
           onClick={() => inputRef.current?.click()}
         >
-          Choose file
+          {t("common.chooseFile")}
         </button>
       </div>
     </div>
