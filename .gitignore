@@ -3,10 +3,12 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+.python-version
 
 # Virtual environments
 .venv/
 .venv310/
+.venv-local/
 venv/
 env/
 
@@ -20,12 +22,18 @@ dist/
 
 # Logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # Jupyter
 .ipynb_checkpoints
 
 # Environment variables
 .env
+*.env.local
+backend/.env
+frontend/.env
 backend/.env.production
 frontend/.env.production
 
@@ -40,11 +48,22 @@ outputs/
 # Node
 node_modules/
 frontend/dist/
+coverage/
 
 # Docker
 *.sqlite
+*.sqlite3
+*.db
+*.db-journal
 seer_ai_local.db
 runtime_app.db
 alembic_smoke.db
 backend_test.db
 backups/
+
+# Tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+.cache/

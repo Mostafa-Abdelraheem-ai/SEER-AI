@@ -588,6 +588,14 @@ cd frontend
 npm run build
 ```
 
+Makefile shortcuts:
+
+```bash
+make test
+make frontend-build
+make validate
+```
+
 Compose validation:
 
 ```bash
@@ -604,6 +612,12 @@ GitHub Actions live in `.github/workflows/`:
 - `docker.yml`
 
 The Docker workflow validates both development and production Compose files and then builds the images.
+
+## Contributor Workflow
+
+- Start with [`CONTRIBUTING.md`](CONTRIBUTING.md) for local setup and PR expectations.
+- Use `.editorconfig` to keep Python and frontend formatting consistent across editors.
+- Prefer `make validate` before opening a pull request.
 
 ## Why pgvector
 
