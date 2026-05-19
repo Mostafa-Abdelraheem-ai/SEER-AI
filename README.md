@@ -628,6 +628,30 @@ pgvector was chosen because it:
 - fits local Docker and single-host EC2 deployment well
 - keeps the system simpler for a graduation project while still looking production-oriented
 
+## Contributors
+
+### Zeyad Abdelhamed
+- Cybersecurity Architecture
+- Threat Intelligence Workflows
+- RAG Pipeline Integration
+- Security Analysis Logic
+- Risk Scoring and Explainability Design
+- Security Validation and Incident Reporting
+- API Security and Authentication Flows
+- Deployment Security and Monitoring
+- Security-Oriented System Design
+
+### Mostafa Abdelraheem
+- AI and Backend Engineering
+- FastAPI Backend Development
+- PostgreSQL and pgvector Integration
+- Frontend Integration and API Routing
+- Dockerization and Deployment Pipelines
+- AI Workflow Integration
+- Database Architecture
+- React Frontend Development
+- System Infrastructure and Application Engineering
+
 ## Notes
 
 - Streamlit is no longer the main application path.
